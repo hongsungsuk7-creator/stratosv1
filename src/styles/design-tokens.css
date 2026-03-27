@@ -1,0 +1,183 @@
+/**
+ * Stratos 디자인 토큰 (디자이너·운영용)
+ * ================================
+ * 다크 모드의 색·톤은 아래 `.dark { --dt-* }` 블록에서만 조정하세요.
+ * Tailwind 유틸 클래스(bg-slate-50 등)와의 연결은 이 파일 하단 "브릿지" 규칙이 담당합니다.
+ * (컴포넌트 TSX에서 긴 className을 줄이려면 `src/constants/uiClasses.ts` 참고)
+ */
+
+.dark {
+  color-scheme: dark;
+
+  /* ---- 표면(Surface) ---- */
+  --dt-surface-page: #0f172a;
+  --dt-surface-card: #1e293b;
+  --dt-surface-muted: #334155;
+  --dt-surface-hover-a: #334155;
+  --dt-surface-hover-b: #475569;
+
+  /* ---- 액센트 틴트(배지·강조 배경) ---- */
+  --dt-tint-blue: rgba(59, 130, 246, 0.1);
+  --dt-tint-amber: rgba(245, 158, 11, 0.1);
+  --dt-tint-indigo: rgba(99, 102, 241, 0.1);
+  --dt-tint-emerald: rgba(16, 185, 129, 0.1);
+  --dt-tint-rose: rgba(244, 63, 94, 0.1);
+  --dt-tint-red: rgba(239, 68, 68, 0.1);
+  --dt-tint-indigo-hover: rgba(99, 102, 241, 0.2);
+
+  /* ---- 본문·라벨 텍스트 ---- */
+  --dt-text-900: #f8fafc;
+  --dt-text-800: #f1f5f9;
+  --dt-text-700: #e2e8f0;
+  --dt-text-600: #cbd5e1;
+  --dt-text-500: #94a3b8;
+  --dt-text-blue-600: #60a5fa;
+  --dt-text-amber-800: #fcd34d;
+  --dt-text-amber-700: #fbbf24;
+  --dt-text-amber-600: #fbbf24;
+  --dt-text-indigo-600: #818cf8;
+  --dt-text-emerald-600: #34d399;
+  --dt-text-rose-800: #fda4af;
+  --dt-text-rose-600: #fb7185;
+  --dt-text-red-600: #f87171;
+
+  /* ---- 테두리·구분선 ---- */
+  --dt-border-strong: #334155;
+  --dt-border-subtle: #1e293b;
+  --dt-border-rose-tint: rgba(244, 63, 94, 0.2);
+  --dt-border-amber-tint: rgba(245, 158, 11, 0.2);
+
+  /* ---- Recharts ---- */
+  --dt-chart-grid: #334155;
+  --dt-chart-axis-text: #94a3b8;
+  --dt-chart-tooltip-bg: #1e293b;
+  --dt-chart-tooltip-border: #334155;
+  --dt-chart-tooltip-item: #f1f5f9;
+}
+
+/* ---- 브릿지: 기존 Tailwind 유틸 이름 유지 → 토큰 값 사용 ---- */
+.dark .bg-white {
+  background-color: var(--dt-surface-card) !important;
+}
+.dark .bg-slate-50 {
+  background-color: var(--dt-surface-page) !important;
+}
+.dark .bg-slate-100 {
+  background-color: var(--dt-surface-muted) !important;
+}
+.dark .bg-blue-50 {
+  background-color: var(--dt-tint-blue) !important;
+}
+.dark .bg-amber-50 {
+  background-color: var(--dt-tint-amber) !important;
+}
+.dark .bg-indigo-50 {
+  background-color: var(--dt-tint-indigo) !important;
+}
+.dark .bg-emerald-50 {
+  background-color: var(--dt-tint-emerald) !important;
+}
+.dark .bg-rose-50 {
+  background-color: var(--dt-tint-rose) !important;
+}
+.dark .bg-red-50 {
+  background-color: var(--dt-tint-red) !important;
+}
+
+.dark .hover\:bg-slate-50:hover {
+  background-color: var(--dt-surface-hover-a) !important;
+}
+.dark .hover\:bg-slate-100:hover {
+  background-color: var(--dt-surface-hover-b) !important;
+}
+.dark .hover\:bg-slate-200:hover {
+  background-color: var(--dt-surface-hover-b) !important;
+}
+.dark .hover\:bg-indigo-100:hover {
+  background-color: var(--dt-tint-indigo-hover) !important;
+}
+
+.dark .text-slate-900 {
+  color: var(--dt-text-900) !important;
+}
+.dark .text-slate-800 {
+  color: var(--dt-text-800) !important;
+}
+.dark .text-slate-700 {
+  color: var(--dt-text-700) !important;
+}
+.dark .text-slate-600 {
+  color: var(--dt-text-600) !important;
+}
+.dark .text-slate-500 {
+  color: var(--dt-text-500) !important;
+}
+.dark .text-blue-600 {
+  color: var(--dt-text-blue-600) !important;
+}
+.dark .text-amber-800 {
+  color: var(--dt-text-amber-800) !important;
+}
+.dark .text-amber-700 {
+  color: var(--dt-text-amber-700) !important;
+}
+.dark .text-amber-600 {
+  color: var(--dt-text-amber-600) !important;
+}
+.dark .text-indigo-600 {
+  color: var(--dt-text-indigo-600) !important;
+}
+.dark .text-emerald-600 {
+  color: var(--dt-text-emerald-600) !important;
+}
+.dark .text-rose-800 {
+  color: var(--dt-text-rose-800) !important;
+}
+.dark .text-rose-600 {
+  color: var(--dt-text-rose-600) !important;
+}
+.dark .text-red-600 {
+  color: var(--dt-text-red-600) !important;
+}
+.dark .text-white {
+  color: #ffffff !important;
+}
+
+/* Dashboard KPI 한 줄 요약: 다크모드에서 즉시관리/상향군 숫자는 인디고-800보다 흰색이 우선 */
+.dark .stratos-kpi-inline-metric-value--highlight {
+  color: #ffffff !important;
+}
+
+.dark .border-slate-200 {
+  border-color: var(--dt-border-strong) !important;
+}
+.dark .border-slate-100 {
+  border-color: var(--dt-border-subtle) !important;
+}
+.dark .border-rose-100 {
+  border-color: var(--dt-border-rose-tint) !important;
+}
+.dark .border-amber-100 {
+  border-color: var(--dt-border-amber-tint) !important;
+}
+.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--dt-border-subtle) !important;
+}
+.dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--dt-border-strong) !important;
+}
+
+.dark .recharts-cartesian-grid-horizontal line,
+.dark .recharts-cartesian-grid-vertical line {
+  stroke: var(--dt-chart-grid) !important;
+}
+.dark .recharts-text {
+  fill: var(--dt-chart-axis-text) !important;
+}
+.dark .recharts-tooltip-wrapper .recharts-default-tooltip {
+  background-color: var(--dt-chart-tooltip-bg) !important;
+  border-color: var(--dt-chart-tooltip-border) !important;
+}
+.dark .recharts-tooltip-item {
+  color: var(--dt-chart-tooltip-item) !important;
+}
