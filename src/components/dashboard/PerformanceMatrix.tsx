@@ -103,7 +103,7 @@ export function PerformanceMatrix({
         pointBorderColor: (ctx: any) => ctx.raw?.data?.id === selectedCampus?.id ? '#fff' : 'rgba(99, 102, 241, 1)',
       },
       {
-        label: '본원',
+        label: '분원',
         data: sourceRows.filter(d => d.type === '분원').map(d => ({ x: d.pScore, y: d.balanceCv, campus: d.campus, data: d })),
         backgroundColor: 'rgba(16, 185, 129, 0.8)', // emerald-500
         borderColor: 'rgba(16, 185, 129, 1)',

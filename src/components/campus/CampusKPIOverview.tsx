@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CAMPUS_DATA, CLASSES_DATA, NATIONAL_AVERAGES } from '../../data/campusMockData';
+import { CAMPUS_DATA, CLASSES_DATA, LEVELS, NATIONAL_AVERAGES } from '../../data/campusMockData';
 
 type TypeFilter = '전체' | 'ECP' | 'ELE' | 'GRAD';
 type GradeFilter = '전체 등급' | '즉시관리군' | '우수군';
@@ -10,11 +10,12 @@ export function CampusKPIOverview() {
   const [filterCategory, setFilterCategory] = useState('레벨별');
   const [filterValue, setFilterValue] = useState('전체 레벨');
 
-  const levelOptions = ['전체 레벨', 'Level 1', 'Level 2', 'Level 3', 'Level 4', 'Level 5'];
+  const levelOptions = ['전체 레벨', ...LEVELS];
   const periodOptions = ['1년 미만', '2년 미만', '2년 이상'];
 
   const filteredData = CLASSES_DATA.filter(item => {
     if (typeFilter !== '전체' && item.course !== typeFilter) return false;
+    if (filterCategory === '레벨별' && filterValue !== '전체 레벨' && item.level !== filterValue) return false;
     // Grade filter logic (mocked)
     if (gradeFilter === '우수군' && item.pScore < 90) return false;
     if (gradeFilter === '즉시관리군' && item.pScore > 80) return false;
@@ -93,7 +94,7 @@ export function CampusKPIOverview() {
             <select 
               value={filterValue}
               onChange={(e) => setFilterValue(e.target.value)}
-              className="bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-md focus:ring-indigo-500 focus:border-indigo-500 block py-1 px-2 h-8 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 min-w-[100px]"
+              className="bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-md focus:ring-indigo-500 focus:border-indigo-500 block py-1 px-2 h-8 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 min-w-[128px]"
             >
               {filterCategory === '레벨별' ? (
                 levelOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)

@@ -25,7 +25,6 @@ interface DashboardFiltersProps {
   campusOptions: string[];
   onSearch?: () => void;
   yearOptions?: number[];
-  hideCampusSelect?: boolean;
 }
 
 export function DashboardFilters({
@@ -50,7 +49,6 @@ export function DashboardFilters({
   campusOptions,
   onSearch,
   yearOptions = [2026, 2025, 2024, 2023],
-  hideCampusSelect = false,
 }: DashboardFiltersProps) {
   const [isCourseDropdownOpen, setIsCourseDropdownOpen] = useState(false);
   const [isCampusDropdownOpen, setIsCampusDropdownOpen] = useState(false);
@@ -87,7 +85,7 @@ export function DashboardFilters({
       </div>
       
       {isExpanded && (
-        <div className={`grid grid-cols-2 md:grid-cols-4 ${hideCampusSelect ? 'xl:grid-cols-7' : 'xl:grid-cols-8'} gap-3`}>
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-8">
           {/* 1. 시험 연도 (Combo) */}
         <div className="relative">
           <label className="block text-[11px] font-medium text-slate-500 mb-1 dark:text-slate-400">시험 연도</label>
@@ -353,7 +351,7 @@ export function DashboardFilters({
         </div>
 
         {/* 7. 캠퍼스 선택 (Multi-select) */}
-        {!hideCampusSelect && <div className="relative">
+        <div className="relative">
           <label className="block text-[11px] font-medium text-slate-500 mb-1 dark:text-slate-400">캠퍼스 선택</label>
           <div 
             className={`w-full bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-md py-1.5 px-2 h-8 flex items-center justify-between dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 ${userGroup === 'GROUP_HQ' ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed'}`}
@@ -417,7 +415,7 @@ export function DashboardFilters({
               </div>
             </>
           )}
-        </div>}
+        </div>
 
         {/* 8. 분석대상 조건 (Checkbox) */}
         <div>

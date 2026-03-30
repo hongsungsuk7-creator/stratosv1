@@ -8,12 +8,12 @@ export function ClassAlertsAndRankings() {
   const bottomClasses = sortedClasses.slice(-5).reverse();
 
   return (
-    <div className="mb-6">
-      <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm dark:bg-slate-800 dark:border-slate-700">
-        <h3 className="text-base font-bold text-slate-800 mb-4 flex items-center dark:text-white">
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="flex h-full min-h-0 flex-col rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+        <h3 className="mb-4 flex shrink-0 items-center text-base font-bold text-slate-800 dark:text-white">
           <Award className="w-5 h-5 mr-2 text-amber-500 dark:text-amber-400"/> 학급 Top / Bottom Ranking
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+        <div className="grid min-h-0 flex-1 grid-cols-1 gap-12 md:grid-cols-2">
           <div>
             <div className="flex items-center justify-between mb-3 border-b border-slate-100 pb-2 dark:border-slate-700">
               <h4 className="text-sm font-bold text-emerald-600 dark:text-emerald-400">🏆 Top 5 학급 (Best Practice)</h4>

@@ -3,7 +3,7 @@ import { UI_KPI_INLINE_SELECT_CLASS } from '@/constants/uiClasses';
 import { mockData } from './NationalCampusRanking';
 import { useExcelData } from '@/context/ExcelDataContext';
 
-type TypeFilter = '전체' | '직영' | '본원';
+type TypeFilter = '전체' | '직영' | '분원';
 type GradeFilter = '전체 등급' | '즉시관리군' | '우수군';
 
 export function StratosKPIOverview() {
@@ -28,7 +28,7 @@ export function StratosKPIOverview() {
   const filteredData = sourceRows.filter(item => {
     // Type filter
     if (typeFilter === '직영' && item.type !== '직영') return false;
-    if (typeFilter === '본원' && item.type !== '분원') return false;
+    if (typeFilter === '분원' && item.type !== '분원') return false;
 
     // Grade filter
     if (gradeFilter === '우수군' && item.coreGrade !== 'S') return false;
@@ -81,7 +81,7 @@ export function StratosKPIOverview() {
           {/* Left Filter Area */}
           <div className="flex items-center gap-2">
             <div className="flex flex-wrap items-center gap-1.5">
-              {(['전체', '직영', '본원'] as TypeFilter[]).map((type) => (
+              {(['전체', '직영', '분원'] as TypeFilter[]).map((type) => (
                 <button
                   key={type}
                   onClick={() => setTypeFilter(type)}
@@ -180,7 +180,7 @@ export function StratosKPIOverview() {
             <div className="text-3xl font-bold text-slate-800 dark:text-white mt-2 mb-3 tracking-tight">{totalCampuses}</div>
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400"><span className="text-slate-500">직영</span><span className="text-slate-700 dark:text-slate-300">{directCount}</span></div>
-              <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400"><span className="text-slate-500">본원</span><span className="text-slate-700 dark:text-slate-300">{franchiseCount}</span></div>
+              <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400"><span className="text-slate-500">분원</span><span className="text-slate-700 dark:text-slate-300">{franchiseCount}</span></div>
               <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 pt-1.5 border-t border-slate-200 dark:border-slate-700/50"><span className="text-slate-500">학생수</span><span className="text-indigo-600 dark:text-indigo-300 font-medium">{totalStudents}</span></div>
             </div>
           </div>
@@ -192,7 +192,7 @@ export function StratosKPIOverview() {
             <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mt-2 mb-3 tracking-tight">{sGrade.count}</div>
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400"><span className="text-slate-500">직영</span><span className="text-slate-700 dark:text-slate-300">{sGrade.direct}</span></div>
-              <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400"><span className="text-slate-500">본원</span><span className="text-slate-700 dark:text-slate-300">{sGrade.franchise}</span></div>
+              <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400"><span className="text-slate-500">분원</span><span className="text-slate-700 dark:text-slate-300">{sGrade.franchise}</span></div>
               <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 pt-1.5 border-t border-slate-200 dark:border-slate-700/50"><span className="text-slate-500">비중</span><span className="text-emerald-600 dark:text-emerald-300 font-medium">{sGrade.ratio}%</span></div>
             </div>
           </div>
@@ -204,7 +204,7 @@ export function StratosKPIOverview() {
             <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mt-2 mb-3 tracking-tight">{aGrade.count}</div>
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400"><span className="text-slate-500">직영</span><span className="text-slate-700 dark:text-slate-300">{aGrade.direct}</span></div>
-              <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400"><span className="text-slate-500">본원</span><span className="text-slate-700 dark:text-slate-300">{aGrade.franchise}</span></div>
+              <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400"><span className="text-slate-500">분원</span><span className="text-slate-700 dark:text-slate-300">{aGrade.franchise}</span></div>
               <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 pt-1.5 border-t border-slate-200 dark:border-slate-700/50"><span className="text-slate-500">비중</span><span className="text-blue-600 dark:text-blue-300 font-medium">{aGrade.ratio}%</span></div>
             </div>
           </div>
@@ -216,7 +216,7 @@ export function StratosKPIOverview() {
             <div className="text-3xl font-bold text-amber-600 dark:text-amber-400 mt-2 mb-3 tracking-tight">{bGrade.count}</div>
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400"><span className="text-slate-500">직영</span><span className="text-slate-700 dark:text-slate-300">{bGrade.direct}</span></div>
-              <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400"><span className="text-slate-500">본원</span><span className="text-slate-700 dark:text-slate-300">{bGrade.franchise}</span></div>
+              <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400"><span className="text-slate-500">분원</span><span className="text-slate-700 dark:text-slate-300">{bGrade.franchise}</span></div>
               <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 pt-1.5 border-t border-slate-200 dark:border-slate-700/50"><span className="text-slate-500">비중</span><span className="text-amber-600 dark:text-amber-300 font-medium">{bGrade.ratio}%</span></div>
             </div>
           </div>
@@ -228,7 +228,7 @@ export function StratosKPIOverview() {
             <div className="text-3xl font-bold text-rose-600 dark:text-rose-400 mt-2 mb-3 tracking-tight">{cGrade.count}</div>
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400"><span className="text-slate-500">직영</span><span className="text-slate-700 dark:text-slate-300">{cGrade.direct}</span></div>
-              <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400"><span className="text-slate-500">본원</span><span className="text-slate-700 dark:text-slate-300">{cGrade.franchise}</span></div>
+              <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400"><span className="text-slate-500">분원</span><span className="text-slate-700 dark:text-slate-300">{cGrade.franchise}</span></div>
               <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 pt-1.5 border-t border-slate-200 dark:border-slate-700/50"><span className="text-slate-500">비중</span><span className="text-rose-600 dark:text-rose-300 font-medium">{cGrade.ratio}%</span></div>
             </div>
           </div>

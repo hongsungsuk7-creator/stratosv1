@@ -8,7 +8,7 @@ import { renderTabContent } from '@/tabContent'
 import './App.css'
 
 export default function App() {
-  const [userGroup, setUserGroup] = useState<UserGroup>('GROUP_HQ')
+  const userGroup: UserGroup = 'GROUP_HQ'
   const [activeTab, setActiveTabState] = useState('dashboard')
   const [openTabs, setOpenTabs] = useState<string[]>(['dashboard'])
 
@@ -40,8 +40,6 @@ export default function App() {
       <Layout
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        userGroup={userGroup}
-        setUserGroup={setUserGroup}
         openTabs={openTabs}
         closeTab={closeTab}
         tabLabels={TAB_LABELS}

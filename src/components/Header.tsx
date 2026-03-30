@@ -1,16 +1,13 @@
 import React from 'react';
-import { UserGroup } from '../types';
-import { Users, Building, GraduationCap, Sun, Moon, FileSpreadsheet } from 'lucide-react';
+import { Sun, Moon, FileSpreadsheet } from 'lucide-react';
 import { useExcelData } from '@/context/ExcelDataContext';
 
 interface HeaderProps {
-  userGroup: UserGroup;
-  setUserGroup: (group: UserGroup) => void;
   isDarkMode: boolean;
   setIsDarkMode: (isDark: boolean) => void;
 }
 
-export function Header({ userGroup, setUserGroup, isDarkMode, setIsDarkMode }: HeaderProps) {
+export function Header({ isDarkMode, setIsDarkMode }: HeaderProps) {
   const { activeDataset, isSampleMode, parseError } = useExcelData();
 
   return (
@@ -46,37 +43,6 @@ export function Header({ userGroup, setUserGroup, isDarkMode, setIsDarkMode }: H
         >
           {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
         </button>
-
-        <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">권한 시뮬레이션:</span>
-        <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
-          <button
-            onClick={() => setUserGroup('GROUP_HQ')}
-            className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
-              userGroup === 'GROUP_HQ' ? 'bg-white dark:bg-slate-700 shadow-sm text-indigo-600 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-            }`}
-          >
-            <Building className="w-3.5 h-3.5" />
-            <span>본부</span>
-          </button>
-          <button
-            onClick={() => setUserGroup('GROUP_CAMPUS')}
-            className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
-              userGroup === 'GROUP_CAMPUS' ? 'bg-white dark:bg-slate-700 shadow-sm text-indigo-600 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-            }`}
-          >
-            <Users className="w-3.5 h-3.5" />
-            <span>캠퍼스</span>
-          </button>
-          <button
-            onClick={() => setUserGroup('GROUP_TEACHER')}
-            className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
-              userGroup === 'GROUP_TEACHER' ? 'bg-white dark:bg-slate-700 shadow-sm text-indigo-600 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-            }`}
-          >
-            <GraduationCap className="w-3.5 h-3.5" />
-            <span>강사</span>
-          </button>
-        </div>
       </div>
     </header>
   );

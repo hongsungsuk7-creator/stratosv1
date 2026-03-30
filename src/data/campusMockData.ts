@@ -70,7 +70,14 @@ export const CAMPUS_DATA = {
   sGradeRatio: 15.8
 };
 
-export const LEVELS = ['GT1', 'GT2', 'GT3', 'GT4', 'MGT1', 'MGT2', 'MGT3', 'MGT4', 'S1', 'S2', 'S3', 'S4', 'MAG1', 'MAG2', 'MAG3', 'MAG4'];
+/** 캠퍼스 대시보드 레벨 필터 — 커리큘럼 레벨 코드 (GT / MGT / S / R / MAG) */
+export const LEVELS = [
+  'GT1', 'GT2', 'GT3', 'GT4',
+  'MGT1', 'MGT2', 'MGT3', 'MGT4',
+  'S1', 'S2', 'S3', 'S4',
+  'R1', 'R2', 'R3', 'R4',
+  'MAG1', 'MAG1+', 'MAG2', 'MAG2+', 'MAG3', 'MAG4',
+];
 
 export const CLASSES_DATA: ClassData[] = [
   { id: 'C001', name: 'MAG1-Yellow', level: 'MAG1', course: 'ELE', teacherKr: '김철수', teacherEn: 'James', studentCount: 12, pScore: 85.2, zScore: 1.1, ar: 88.5, cv: 8.2, peqm: 'G', peqmScore: 82, pcramStatus: '상향완성', status: 'Excellent', difficulty: 7.8, excellentRatio: 85 },

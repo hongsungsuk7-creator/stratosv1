@@ -21,26 +21,30 @@ interface AlertsAndRankingsProps {
   bottomCampuses: CampusRankingRow[];
 }
 
+const formatRankDeltaInteger = (delta: number) => Math.round(delta);
+
 function RankChangeIndicator({ rankChange }: { rankChange: CampusRankChange }) {
   if (rankChange.kind === 'up') {
+    const deltaInt = formatRankDeltaInteger(rankChange.delta);
     return (
       <span
         className="inline-flex items-center gap-0.5 text-emerald-600 dark:text-emerald-400 text-xs font-semibold tabular-nums"
-        title={`순위 ${rankChange.delta.toFixed(1)}계단 상승`}
+        title={`순위 ${deltaInt}계단 상승`}
       >
         <TrendingUp className="w-3.5 h-3.5 shrink-0" aria-hidden />
-        {rankChange.delta.toFixed(1)}
+        {deltaInt}
       </span>
     );
   }
   if (rankChange.kind === 'down') {
+    const deltaInt = formatRankDeltaInteger(rankChange.delta);
     return (
       <span
         className="inline-flex items-center gap-0.5 text-rose-600 dark:text-rose-400 text-xs font-semibold tabular-nums"
-        title={`순위 ${rankChange.delta.toFixed(1)}계단 하락`}
+        title={`순위 ${deltaInt}계단 하락`}
       >
         <TrendingDown className="w-3.5 h-3.5 shrink-0" aria-hidden />
-        {rankChange.delta.toFixed(1)}
+        {deltaInt}
       </span>
     );
   }

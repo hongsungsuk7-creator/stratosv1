@@ -16,10 +16,10 @@ export function DistributionAndAverages() {
   ];
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-2">
       {/* Left: Distribution Table */}
-      <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm dark:bg-slate-800 dark:border-slate-700 flex flex-col">
-        <div className="flex items-center justify-between mb-2">
+      <div className="flex h-full min-h-0 flex-col rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+        <div className="mb-2 flex shrink-0 items-center justify-between">
           <h3 className="text-base font-bold text-slate-800 flex items-center dark:text-white">
             <BarChart2 className="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-400" />
             순위구간별 직영/분원 분포
@@ -28,7 +28,7 @@ export function DistributionAndAverages() {
             총 58개
           </span>
         </div>
-        <div className="overflow-x-auto mt-auto">
+        <div className="min-h-0 flex-1 overflow-x-auto">
           <table className="w-full text-sm text-left">
             <thead className="text-xs text-slate-600 bg-slate-50 dark:bg-slate-700/50 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700">
               <tr>
@@ -68,37 +68,44 @@ export function DistributionAndAverages() {
       </div>
 
       {/* Right: Bar Chart */}
-      <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm dark:bg-slate-800 dark:border-slate-700 flex flex-col">
-        <div className="flex items-center mb-4">
-          <h3 className="text-base font-bold text-slate-800 flex items-center dark:text-white">
+      <div className="flex h-full min-h-0 flex-col rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+        <div className="mb-2 flex shrink-0 items-center">
+          <h3 className="flex items-center text-base font-bold text-slate-800 dark:text-white">
             <BarChart2 className="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-400" />
             과목별 전국 평균 정답률
           </h3>
         </div>
-        
-        <div className="w-full h-64 mt-auto">
+
+        <div className="min-h-0 w-full flex-1">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={gaugeData} margin={{ top: 20, right: 20, left: 0, bottom: 20 }}>
+            <BarChart
+              data={gaugeData}
+              margin={{ top: 16, right: 12, left: 0, bottom: 8 }}
+              barCategoryGap="28%"
+              barGap={2}
+            >
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" className="dark:stroke-slate-700" />
               <XAxis 
                 dataKey="subject" 
                 axisLine={false} 
                 tickLine={false} 
                 tick={{ fill: '#64748b', fontSize: 12 }} 
-                dy={10}
+                dy={8}
+                interval={0}
               />
               <YAxis 
                 axisLine={false} 
                 tickLine={false} 
                 domain={[0, 100]} 
                 tick={{ fill: '#64748b', fontSize: 12 }}
+                width={36}
               />
               <Tooltip 
                 cursor={{ fill: '#f1f5f9', opacity: 0.5 }} 
                 contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                 formatter={(value: number) => [`${value}%`, '정답률']}
               />
-              <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={50}>
+              <Bar dataKey="value" radius={[4, 4, 0, 0]} maxBarSize={56}>
                 {gaugeData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}

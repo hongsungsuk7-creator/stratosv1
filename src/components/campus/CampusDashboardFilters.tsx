@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Filter, Search, ChevronDown, ChevronUp } from 'lucide-react';
 import { UI_FILTER_CONTROL_COMPACT_CLASS } from '../../constants/uiClasses';
 import { LEVELS } from '../../data/campusMockData';
@@ -44,6 +45,50 @@ export function CampusDashboardFilters({
 }: CampusDashboardFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isSubjectDropdownOpen, setIsSubjectDropdownOpen] = useState(false);
+  const subjectTriggerRef = useRef<HTMLDivElement>(null);
+  const [subjectMenuPos, setSubjectMenuPos] = useState<{
+    top: number;
+    left: number;
+    width: number;
+  } | null>(null);
+
+  const updateSubjectMenuPos = useCallback(() => {
+    const el = subjectTriggerRef.current;
+    if (!el || !isSubjectDropdownOpen) return;
+    const r = el.getBoundingClientRect();
+    setSubjectMenuPos({
+      top: r.bottom + 4,
+      left: r.left,
+      width: Math.max(r.width, 192),
+    });
+  }, [isSubjectDropdownOpen]);
+
+  useLayoutEffect(() => {
+    updateSubjectMenuPos();
+  }, [updateSubjectMenuPos]);
+
+  useEffect(() => {
+    if (!isSubjectDropdownOpen) {
+      setSubjectMenuPos(null);
+      return;
+    }
+    const onScrollOrResize = () => updateSubjectMenuPos();
+    window.addEventListener('scroll', onScrollOrResize, true);
+    window.addEventListener('resize', onScrollOrResize);
+    return () => {
+      window.removeEventListener('scroll', onScrollOrResize, true);
+      window.removeEventListener('resize', onScrollOrResize);
+    };
+  }, [isSubjectDropdownOpen, updateSubjectMenuPos]);
+
+  useEffect(() => {
+    if (!isSubjectDropdownOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsSubjectDropdownOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isSubjectDropdownOpen]);
 
   const MT_MONTHS = [1, 3, 4, 6, 7, 9, 10, 12];
   const LT_MONTHS = [2, 5, 8, 11];
@@ -66,7 +111,7 @@ export function CampusDashboardFilters({
   return (
     <div className="sticky top-0 z-[120] isolate">
       <div className="pointer-events-none absolute -inset-x-4 inset-y-0 bg-white dark:bg-slate-900" />
-      <div className="relative p-4 rounded-xl border border-slate-200 shadow-lg mb-6 transition-all duration-300 bg-white dark:border-[3px] dark:border-slate-50 dark:bg-slate-800 overflow-hidden">
+      <div className="relative p-4 rounded-xl border border-slate-200 shadow-lg mb-6 transition-all duration-300 bg-white dark:border-[3px] dark:border-slate-50 dark:bg-slate-800">
       <div className={`flex items-center justify-between ${isExpanded ? 'mb-4' : ''}`}>
         <div className="flex items-center gap-4">
           <button 
@@ -213,73 +258,96 @@ export function CampusDashboardFilters({
             </div>
           </div>
 
-          {/* 7. 과목 선택 (Multi-select) */}
-          <div className="relative">
+          {/* 7. 과목 선택 (Multi-select) — portal로 렌더해 스크롤/overflow 영역에 잘리지 않게 함 */}
+          <div>
             <label className="block text-[11px] font-bold text-slate-500 mb-1 dark:text-white uppercase tracking-wider">과목 선택</label>
-            <div 
-              className="w-full bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-md py-1.5 px-2 h-9 flex items-center justify-between cursor-pointer dark:bg-slate-700 dark:border-slate-600 dark:text-white"
-              onClick={() => setIsSubjectDropdownOpen(!isSubjectDropdownOpen)}
+            <div
+              ref={subjectTriggerRef}
+              className="flex h-9 w-full cursor-pointer items-center justify-between rounded-md border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs text-slate-700 dark:border-slate-600 dark:bg-slate-700 dark:text-white"
+              onClick={() => setIsSubjectDropdownOpen((o) => !o)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setIsSubjectDropdownOpen((o) => !o);
+                }
+              }}
             >
               <span className="truncate">
                 {selectedSubjects.length === subjectOptions.length ? '전체' : `${selectedSubjects.length}개 선택`}
               </span>
-              <ChevronDown className="w-4 h-4 text-slate-400 dark:text-slate-500" />
+              <ChevronDown className="h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500" />
             </div>
-            
-            {isSubjectDropdownOpen && (
-              <>
-                <div 
-                  className="fixed inset-0 z-10" 
-                  onClick={() => setIsSubjectDropdownOpen(false)}
-                />
-                <div className="absolute z-20 w-48 mt-1 bg-white border border-slate-200 rounded-md shadow-lg max-h-60 overflow-y-auto left-0 dark:bg-slate-800 dark:border-slate-700">
-                  <div className="p-2 sticky top-0 bg-white border-b border-slate-100 flex justify-between items-center z-10 dark:bg-slate-800 dark:border-slate-700">
-                    <label className="flex items-center cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        className="w-3.5 h-3.5 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500 dark:bg-slate-700 dark:border-slate-600 dark:checked:bg-indigo-500"
-                        checked={selectedSubjects.length === subjectOptions.length && subjectOptions.length > 0}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSelectedSubjects([...subjectOptions]);
-                          } else {
-                            setSelectedSubjects([]);
-                          }
-                        }}
-                      />
-                      <span className="ml-2 text-xs font-semibold text-slate-800 dark:text-slate-200">전체 선택</span>
-                    </label>
-                    <button 
-                      className="text-[10px] text-slate-400 hover:text-slate-600 font-medium dark:text-slate-500 dark:hover:text-slate-400"
-                      onClick={() => setSelectedSubjects([])}
-                    >
-                      초기화
-                    </button>
-                  </div>
-                  <div className="p-1">
-                    {subjectOptions.map(subject => (
-                      <label key={subject} className="flex items-center px-2 py-1.5 hover:bg-slate-50 rounded cursor-pointer dark:hover:bg-slate-700/50">
-                        <input 
-                          type="checkbox" 
-                          className="w-3.5 h-3.5 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500 dark:bg-slate-700 dark:border-slate-600 dark:checked:bg-indigo-500"
-                          checked={selectedSubjects.includes(subject)}
+
+            {isSubjectDropdownOpen &&
+              subjectMenuPos &&
+              createPortal(
+                <>
+                  <div
+                    className="fixed inset-0 z-[199]"
+                    aria-hidden
+                    onClick={() => setIsSubjectDropdownOpen(false)}
+                  />
+                  <div
+                    className="fixed z-[200] max-h-60 overflow-y-auto rounded-md border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-800"
+                    style={{
+                      top: subjectMenuPos.top,
+                      left: subjectMenuPos.left,
+                      width: subjectMenuPos.width,
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-100 bg-white p-2 dark:border-slate-700 dark:bg-slate-800">
+                      <label className="flex cursor-pointer items-center">
+                        <input
+                          type="checkbox"
+                          className="h-3.5 w-3.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-700 dark:checked:bg-indigo-500"
+                          checked={selectedSubjects.length === subjectOptions.length && subjectOptions.length > 0}
                           onChange={(e) => {
                             if (e.target.checked) {
-                              setSelectedSubjects([...selectedSubjects, subject]);
+                              setSelectedSubjects([...subjectOptions]);
                             } else {
-                              setSelectedSubjects(selectedSubjects.filter(s => s !== subject));
+                              setSelectedSubjects([]);
                             }
                           }}
                         />
-                        <span className="ml-2 text-xs text-slate-700 dark:text-slate-300">
-                          {subject}
-                        </span>
+                        <span className="ml-2 text-xs font-semibold text-slate-800 dark:text-slate-200">전체 선택</span>
                       </label>
-                    ))}
+                      <button
+                        type="button"
+                        className="text-[10px] font-medium text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-400"
+                        onClick={() => setSelectedSubjects([])}
+                      >
+                        초기화
+                      </button>
+                    </div>
+                    <div className="p-1">
+                      {subjectOptions.map((subject) => (
+                        <label
+                          key={subject}
+                          className="flex cursor-pointer items-center rounded px-2 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-700/50"
+                        >
+                          <input
+                            type="checkbox"
+                            className="h-3.5 w-3.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-700 dark:checked:bg-indigo-500"
+                            checked={selectedSubjects.includes(subject)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedSubjects([...selectedSubjects, subject]);
+                              } else {
+                                setSelectedSubjects(selectedSubjects.filter((s) => s !== subject));
+                              }
+                            }}
+                          />
+                          <span className="ml-2 text-xs text-slate-700 dark:text-slate-300">{subject}</span>
+                        </label>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              </>
-            )}
+                </>,
+                document.body,
+              )}
           </div>
 
           {/* 8. 분석대상 조건 */}

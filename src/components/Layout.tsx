@@ -1,33 +1,25 @@
 import React, { useState } from 'react';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
-import { UserGroup } from '../types';
 import { X } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
   activeTab: string;
   setActiveTab: (tab: string) => void;
-  userGroup: UserGroup;
-  setUserGroup: (group: UserGroup) => void;
   openTabs: string[];
   closeTab: (e: React.MouseEvent, tabId: string) => void;
   tabLabels: Record<string, string>;
 }
 
-export function Layout({ children, activeTab, setActiveTab, userGroup, setUserGroup, openTabs, closeTab, tabLabels }: LayoutProps) {
+export function Layout({ children, activeTab, setActiveTab, openTabs, closeTab, tabLabels }: LayoutProps) {
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   return (
     <div className={`flex h-screen bg-slate-50 text-slate-900 font-sans ${isDarkMode ? 'dark' : ''}`}>
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header 
-          userGroup={userGroup} 
-          setUserGroup={setUserGroup} 
-          isDarkMode={isDarkMode} 
-          setIsDarkMode={setIsDarkMode} 
-        />
+        <Header isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
         
         {/* Tab Bar */}
         <div className="flex items-center px-2 bg-slate-100 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 overflow-x-auto hide-scrollbar transition-colors duration-200">

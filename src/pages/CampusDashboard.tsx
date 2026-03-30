@@ -81,7 +81,7 @@ export function CampusDashboard({ userGroup: _userGroup }: CampusDashboardProps)
       <CampusDistribution />
 
       {/* Alerts & Rankings */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 items-stretch gap-6 xl:grid-cols-2">
         <ClassAlertsAndRankings />
         <StudentRiskTable />
       </div>

@@ -129,7 +129,6 @@ export function Dashboard({ userGroup }: { userGroup: UserGroup }) {
         subjectOptions={subjectOptions}
         courseOptions={courseOptions}
         campusOptions={campusOptions}
-        hideCampusSelect={true}
         onSearch={handleSearch}
       />
 
