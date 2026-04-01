@@ -4,7 +4,8 @@ import * as XLSX from 'xlsx';
 import type { CampusRankingData } from '@/types';
 import { useExcelData } from '@/context/ExcelDataContext';
 import { PSCORE_CAMPUS_2025_MT_DATA } from '@/data/pscoreCampus2025MtData';
-import { parseExamOptionLabel, toExamPeriodKey } from '@/utils/examPeriod';
+import { resolveExamPeriodFromTestLabel, toExamPeriodKey } from '@/utils/examPeriod';
+import { getExamCohortCampusCount } from '@/utils/examCohortCampusCount';
 
 // eslint-disable-next-line react-refresh/only-export-components -- mock dataset co-exported with component
 export const mockData: CampusRankingData[] = [
@@ -85,7 +86,10 @@ export function NationalCampusRanking({
   selectedCampuses = [],
   highlightedCampusName,
   selectedYear,
-  selectedTests = []
+  selectedTests = [],
+  omitTitleHeading = false,
+  omitOuterCard = false,
+  hideExamCohortBadge = false,
 }: { 
   title?: string, 
   showOnlyPScore?: boolean,
@@ -95,7 +99,13 @@ export function NationalCampusRanking({
   selectedCampuses?: string[],
   highlightedCampusName?: string,
   selectedYear?: number,
-  selectedTests?: string[]
+  selectedTests?: string[],
+  /** 상위 영역에 제목이 있을 때 카드 내 제목(h2)만 숨기고 응시 캠퍼스 수·도구는 유지 */
+  omitTitleHeading?: boolean,
+  /** 대시보드 접기 섹션 등에서 바깥 카드(배경·테두리·라운딩) 중복 제거 */
+  omitOuterCard?: boolean,
+  /** 응시 N개 캠퍼스 배지를 상위 섹션으로 옮길 때 카드 내부 배지 숨김 */
+  hideExamCohortBadge?: boolean,
 }) {
   const { campusRankingData } = useExcelData();
   const normalizeCampusName = (name: string) =>
@@ -103,7 +113,7 @@ export function NationalCampusRanking({
 
   const pScoreRows = PSCORE_CAMPUS_2025_MT_DATA.filter((row) => row.section === 'P-Score');
   const selectedPeriodKeys = selectedTests
-    .map(parseExamOptionLabel)
+    .map((label) => resolveExamPeriodFromTestLabel(label, selectedYear))
     .filter((period): period is { year: number; month: number } => Boolean(period))
     .map(toExamPeriodKey);
   const periodKeySet = new Set(selectedPeriodKeys);
@@ -160,58 +170,6 @@ export function NationalCampusRanking({
     }
   };
 
-  const handleDownloadExcel = () => {
-    const excelData = sortedData.map((item, index) => {
-      const baseData: any = {
-        'No.': index + 1,
-        '캠퍼스': item.campus,
-        '운영주체': item.type,
-        '지역권역': item.region,
-        '운영 연수': item.operationPeriod,
-        '학급수': item.classes,
-        '학생수': item.students,
-        '급당평균': item.avgPerClass,
-        'SC-CV': item.scCv || 0,
-      };
-
-      if (!showOnlyPScore) {
-        baseData['TPI 등급'] = item.tpiGrade;
-        baseData['TPI 점수'] = item.tpiScore;
-      }
-
-      if (showOnlyPScore) {
-        baseData['Balance CV'] = `${item.balanceCv.toFixed(1)}%`;
-        baseData['총평균'] = `${item.pScore.toFixed(1)}%`;
-        displaySubjects.forEach(sub => {
-          const config = subjectMap[sub];
-          if (config) {
-            baseData[config.label] = `${(item as any)[config.key].toFixed(1)}%`;
-          }
-        });
-      } else {
-        baseData['P-SCORE'] = `${item.pScore.toFixed(1)}%`;
-        baseData['Balance CV'] = `${item.balanceCv.toFixed(1)}%`;
-      }
-
-      if (!showOnlyPScore) {
-        baseData['Z-Score'] = item.zScore.toFixed(2);
-        baseData['신뢰 CI'] = item.confidenceCi.toFixed(3);
-        baseData['핵심 등급'] = item.coreGrade;
-        baseData['Elite Z'] = item.eliteZ.toFixed(2);
-        baseData['Elite CV'] = `${item.eliteCv.toFixed(1)}%`;
-        baseData['EMI 등급'] = item.emiGrade;
-      }
-
-      return baseData;
-    });
-
-    const worksheet = XLSX.utils.json_to_sheet(excelData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, title);
-
-    XLSX.writeFile(workbook, `${title.replace(/ /g, '_')}.xlsx`);
-  };
-
   const enhancedMockData = sourceRows.map(item => ({
     ...item,
     pScoreEng: Number((item.pScore - 2.1).toFixed(1)),
@@ -219,6 +177,13 @@ export function NationalCampusRanking({
     pScoreFound: Number((item.pScore - 1.1).toFixed(1)),
     pScoreCult: Number((item.pScore + 0.5).toFixed(1)),
   }));
+
+  /** 선택 시험(및 연도)에 해당하는 P-SCORE 응시 캠퍼스 수 — 표의 직영/분원·검색 필터와 무관 */
+  const examCohortCampusCount = getExamCohortCampusCount(
+    selectedTests,
+    selectedYear,
+    enhancedMockData.length,
+  );
 
   const filteredData = enhancedMockData.filter(item => {
     if (selectedCampuses.length > 0) {
@@ -230,6 +195,34 @@ export function NationalCampusRanking({
     if (filterType === '전체') return true;
     return item.type === filterType;
   });
+
+  const buildScoreRankMap = (
+    rows: CampusRankingData[],
+    getValue: (row: CampusRankingData) => number,
+    direction: 'asc' | 'desc' = 'desc',
+  ) => {
+    const sorted = [...rows].sort((a, b) =>
+      direction === 'desc' ? getValue(b) - getValue(a) : getValue(a) - getValue(b),
+    );
+    const rankMap = new Map<number, number>();
+    let prevValue: number | null = null;
+    let prevRank = 0;
+    sorted.forEach((row, index) => {
+      const value = getValue(row);
+      const rank = prevValue !== null && value === prevValue ? prevRank : index + 1;
+      rankMap.set(row.id, rank);
+      prevValue = value;
+      prevRank = rank;
+    });
+    return rankMap;
+  };
+
+  // 전체 캠퍼스 모집단 기준 순위 (표시 필터와 무관)
+  const rankingPopulation = enhancedMockData;
+  const tpiIntegratedRankMap = buildScoreRankMap(rankingPopulation, (row) => row.tpiScore, 'desc');
+  const pScoreRankMap = buildScoreRankMap(rankingPopulation, (row) => row.pScore, 'desc');
+  const zScoreRankMap = buildScoreRankMap(rankingPopulation, (row) => row.zScore, 'desc');
+  const eliteZRankMap = buildScoreRankMap(rankingPopulation, (row) => row.eliteZ, 'desc');
 
   const sortedData = [...filteredData].sort((a, b) => {
     const valA = (a as any)[sortCriteria];
@@ -245,6 +238,64 @@ export function NationalCampusRanking({
     const numB = valB as number;
     return sortDirection === 'desc' ? numB - numA : numA - numB;
   });
+
+  const handleDownloadExcel = () => {
+    const rankOrDash = (n: number | undefined) => (n != null ? n : '-');
+
+    const excelData = sortedData.map((item, index) => {
+      const campusDisplay = item.campus.replace('폴리어학원(', '').replace(')', '');
+      const rowNo = filterCampusName ? item.id : index + 1;
+
+      const row: Record<string, string | number> = {
+        'No.': rowNo,
+        캠퍼스: campusDisplay,
+        운영주체: item.type,
+        지역권역: item.region,
+        '운영 연수': item.operationPeriod,
+        학급수: item.classes,
+        학생수: item.students,
+        급당평균: item.avgPerClass,
+        'SC-CV': (item.scCv || 0).toFixed(2),
+      };
+
+      if (!showOnlyPScore) {
+        row['TPI순위'] = rankOrDash(tpiIntegratedRankMap.get(item.id));
+        row['TPI 등급'] = item.tpiGrade;
+        row['TPI 점수'] = item.tpiScore;
+      }
+
+      if (showOnlyPScore) {
+        row['Balance CV'] = `${item.balanceCv.toFixed(1)}%`;
+        row['총평균'] = `${item.pScore.toFixed(1)}%`;
+        displaySubjects.forEach((sub) => {
+          const config = subjectMap[sub];
+          if (config) {
+            row[config.label] = `${(item as any)[config.key].toFixed(1)}%`;
+          }
+        });
+      } else {
+        row['P-SCORE 순위'] = rankOrDash(pScoreRankMap.get(item.id));
+        row['P-SCORE'] = `${item.pScore.toFixed(1)}%`;
+        row['Balance CV'] = `${item.balanceCv.toFixed(1)}%`;
+        row['Z-Score 순위'] = rankOrDash(zScoreRankMap.get(item.id));
+        row['Z-Score'] = item.zScore.toFixed(2);
+        row['신뢰 CI'] = item.confidenceCi.toFixed(3);
+        row['핵심 등급'] = item.coreGrade;
+        row['Elite Z 순위'] = rankOrDash(eliteZRankMap.get(item.id));
+        row['Elite Z'] = item.eliteZ.toFixed(2);
+        row['Elite CV'] = `${item.eliteCv.toFixed(1)}%`;
+        row['EMI 등급'] = item.emiGrade;
+      }
+
+      return row;
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, title);
+
+    XLSX.writeFile(workbook, `${title.replace(/ /g, '_')}.xlsx`);
+  };
 
   const SortButton = ({ criteria, label, align = 'center' }: { criteria: SortCriteria, label: string, align?: 'center' | 'right' | 'left' }) => {
     const isActive = sortCriteria === criteria;
@@ -278,26 +329,51 @@ export function NationalCampusRanking({
   }, [normalizedHighlightedCampus, sortCriteria, sortDirection, filterType, selectedCampuses, selectedYear, selectedTests]);
 
   return (
-    <div id="national-campus-ranking" className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-      <div className="p-4 border-b border-slate-200 dark:border-slate-700">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              {title}
-              <span className="text-sm font-normal text-slate-500 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-full">
-                {filteredData.length}개 캠퍼스
-              </span>
-            </h2>
-          </div>
-          
-          <div className="flex flex-wrap items-center gap-3">
+    <div
+      id="national-campus-ranking"
+      className={
+        omitOuterCard
+          ? 'min-w-0 overflow-hidden'
+          : 'overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800'
+      }
+    >
+      <div
+        className={`border-b border-slate-200 dark:border-slate-700 ${
+          omitOuterCard ? 'px-3 py-2' : 'p-4'
+        }`}
+      >
+        <div
+          className={`flex flex-col lg:flex-row lg:items-center ${
+            hideExamCohortBadge ? 'gap-2 lg:justify-end' : 'justify-between gap-3'
+          }`}
+        >
+          {!hideExamCohortBadge && (
+            <div>
+              {omitTitleHeading ? (
+                <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-slate-500 dark:bg-slate-700 dark:text-slate-400">
+                    응시 {examCohortCampusCount}개 캠퍼스
+                  </span>
+                </p>
+              ) : (
+                <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900 dark:text-white">
+                  {title}
+                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-sm font-normal text-slate-500 dark:bg-slate-700 dark:text-slate-400">
+                    응시 {examCohortCampusCount}개 캠퍼스
+                  </span>
+                </h2>
+              )}
+            </div>
+          )}
+
+          <div className="flex flex-wrap items-center gap-2">
             {/* Filter Buttons */}
-            <div className="flex items-center bg-slate-100 dark:bg-slate-700 p-1 rounded-lg">
+            <div className="flex items-center rounded-lg bg-slate-100 p-0.5 dark:bg-slate-700">
               {(['전체', '직영', '분원'] as FilterType[]).map((type) => (
                 <button
                   key={type}
                   onClick={() => setFilterType(type)}
-                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                  className={`rounded-md px-2.5 py-1 text-sm font-medium transition-colors ${
                     filterType === type
                       ? 'bg-white dark:bg-slate-600 text-slate-900 dark:text-white shadow-sm'
                       : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
@@ -310,38 +386,53 @@ export function NationalCampusRanking({
 
             {/* Excel Download Button */}
             <button
+              type="button"
               onClick={handleDownloadExcel}
-              className="flex items-center gap-2 px-1.5 py-1 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50 rounded-lg text-sm font-medium transition-colors border border-emerald-200 dark:border-emerald-800"
+              className={`flex items-center gap-1.5 rounded-full border border-slate-200/90 bg-white text-sm font-medium text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-slate-500 dark:hover:bg-slate-700/80 dark:hover:text-white ${
+                omitOuterCard ? 'px-3 py-1.5' : 'px-4 py-2'
+              }`}
             >
-              <Download className="w-4 h-4" />
+              <Download className="w-4 h-4 shrink-0 opacity-80" />
               Excel 다운로드
             </button>
           </div>
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm text-left">
-          <thead className="text-xs text-slate-700 dark:text-slate-300 uppercase bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
+      <div
+        className={
+          omitOuterCard
+            ? 'max-h-[min(520px,65vh)] overflow-auto'
+            : 'overflow-x-auto'
+        }
+      >
+        <table className="w-full text-left text-sm">
+          <thead
+            className={`text-xs uppercase text-slate-700 dark:text-slate-300 ${
+              omitOuterCard
+                ? 'sticky top-0 z-20 border-b border-slate-200 bg-slate-50 shadow-sm dark:border-slate-700 dark:bg-slate-800'
+                : 'border-b border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/50'
+            }`}
+          >
             {/* Top Header Row for Column Groups */}
             <tr>
               <th colSpan={9} className="px-1.5 py-1 text-center border-r border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
                 기본 정보
               </th>
               {!showOnlyPScore && (
-                <th colSpan={2} className="px-1.5 py-1 text-center border-r border-slate-200 dark:border-slate-700 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-800 dark:text-indigo-300">
+                <th colSpan={3} className="px-1.5 py-1 text-center border-r border-slate-200 dark:border-slate-700 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-800 dark:text-indigo-300">
                   TPI
                 </th>
               )}
-              <th colSpan={showOnlyPScore ? displaySubjects.length + 2 : 2} className={`px-1.5 py-1 text-center bg-orange-50 dark:bg-orange-900/20 text-orange-800 dark:text-orange-300 ${!showOnlyPScore ? 'border-r border-slate-200 dark:border-slate-700' : ''}`}>
+              <th colSpan={showOnlyPScore ? displaySubjects.length + 2 : 3} className={`px-1.5 py-1 text-center bg-orange-50 dark:bg-orange-900/20 text-orange-800 dark:text-orange-300 ${!showOnlyPScore ? 'border-r border-slate-200 dark:border-slate-700' : ''}`}>
                 P-SCORE 영역
               </th>
               {!showOnlyPScore && (
                 <>
-                  <th colSpan={3} className="px-1.5 py-1 text-center border-r border-slate-200 dark:border-slate-700 bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300">
+                  <th colSpan={4} className="px-1.5 py-1 text-center border-r border-slate-200 dark:border-slate-700 bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300">
                     PC-RAM 영역
                   </th>
-                  <th colSpan={3} className="px-1.5 py-1 text-center bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-300">
+                  <th colSpan={4} className="px-1.5 py-1 text-center bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-300">
                     PEQM 영역
                   </th>
                 </>
@@ -378,6 +469,9 @@ export function NationalCampusRanking({
               {/* TPI */}
               {!showOnlyPScore && (
                 <>
+                  <th className="px-1.5 py-1 font-semibold text-right bg-indigo-50/50 dark:bg-indigo-900/10">
+                    <SortButton criteria="tpiScore" label="TPI순위" align="right" />
+                  </th>
                   <th className="px-1.5 py-1 font-semibold text-center bg-indigo-50/50 dark:bg-indigo-900/10">
                     <SortButton criteria="tpiGrade" label="등급" />
                   </th>
@@ -405,6 +499,9 @@ export function NationalCampusRanking({
               ) : (
                 <>
                   <th className="px-1.5 py-1 font-semibold text-right bg-orange-50/50 dark:bg-orange-900/10">
+                    <SortButton criteria="pScore" label="순위" align="right" />
+                  </th>
+                  <th className="px-1.5 py-1 font-semibold text-right bg-orange-50/50 dark:bg-orange-900/10">
                     <SortButton criteria="pScore" label="P-SCORE" align="right" />
                   </th>
                   <th className={`px-1.5 py-1 font-semibold text-right bg-orange-50/50 dark:bg-orange-900/10 ${!showOnlyPScore ? 'border-r border-slate-200 dark:border-slate-700' : ''}`}>
@@ -417,6 +514,9 @@ export function NationalCampusRanking({
               {!showOnlyPScore && (
                 <>
                   <th className="px-1.5 py-1 font-semibold text-right bg-blue-50/50 dark:bg-blue-900/10">
+                    <SortButton criteria="zScore" label="순위" align="right" />
+                  </th>
+                  <th className="px-1.5 py-1 font-semibold text-right bg-blue-50/50 dark:bg-blue-900/10">
                     <SortButton criteria="zScore" label="Z-Score" align="right" />
                   </th>
                   <th className="px-1.5 py-1 font-semibold text-right bg-blue-50/50 dark:bg-blue-900/10">
@@ -427,6 +527,9 @@ export function NationalCampusRanking({
                   </th>
                   
                   {/* PEQM */}
+                  <th className="px-1.5 py-1 font-semibold text-right bg-emerald-50/50 dark:bg-emerald-900/10">
+                    <SortButton criteria="eliteZ" label="순위" align="right" />
+                  </th>
                   <th className="px-1.5 py-1 font-semibold text-right bg-emerald-50/50 dark:bg-emerald-900/10">
                     <SortButton criteria="eliteZ" label="Elite Z" align="right" />
                   </th>
@@ -466,11 +569,13 @@ export function NationalCampusRanking({
                   {item.campus.replace('폴리어학원(', '').replace(')', '')}
                 </td>
                 <td className="px-1.5 py-1 text-center">
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                    item.type === '직영' 
-                      ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300' 
-                      : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
-                  }`}>
+                  <span
+                    className={`inline-flex shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
+                      item.type === '직영'
+                        ? 'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400'
+                        : 'bg-purple-50 text-purple-600 dark:bg-purple-500/10 dark:text-purple-400'
+                    }`}
+                  >
                     {item.type}
                   </span>
                 </td>
@@ -484,6 +589,7 @@ export function NationalCampusRanking({
                 {/* TPI */}
                 {!showOnlyPScore && (
                   <>
+                    <td className="px-1.5 py-1 text-right text-indigo-600 dark:text-indigo-300 bg-indigo-50/30 dark:bg-indigo-900/5">{tpiIntegratedRankMap.get(item.id) ?? '-'}</td>
                     <td className="px-1.5 py-1 text-center bg-indigo-50/30 dark:bg-indigo-900/5">
                       <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
                         item.tpiGrade === 'S' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300' :
@@ -509,6 +615,7 @@ export function NationalCampusRanking({
                   </>
                 ) : (
                   <>
+                    <td className="px-1.5 py-1 text-right text-orange-600 dark:text-orange-300 bg-orange-50/30 dark:bg-orange-900/5">{pScoreRankMap.get(item.id) ?? '-'}</td>
                     <td className="px-1.5 py-1 text-right font-medium text-orange-600 dark:text-orange-400 bg-orange-50/30 dark:bg-orange-900/5">{item.pScore.toFixed(1)}%</td>
                     <td className={`px-1.5 py-1 text-right text-slate-600 dark:text-slate-300 bg-orange-50/30 dark:bg-orange-900/5 ${!showOnlyPScore ? 'border-r border-slate-200 dark:border-slate-700' : ''}`}>{item.balanceCv.toFixed(1)}%</td>
                   </>
@@ -517,6 +624,7 @@ export function NationalCampusRanking({
                 {/* PC-RAM */}
                 {!showOnlyPScore && (
                   <>
+                    <td className="px-1.5 py-1 text-right text-blue-600 dark:text-blue-300 bg-blue-50/30 dark:bg-blue-900/5">{zScoreRankMap.get(item.id) ?? '-'}</td>
                     <td className="px-1.5 py-1 text-right font-medium text-blue-600 dark:text-blue-400 bg-blue-50/30 dark:bg-blue-900/5">{item.zScore.toFixed(2)}</td>
                     <td className="px-1.5 py-1 text-right text-slate-600 dark:text-slate-300 bg-blue-50/30 dark:bg-blue-900/5">{item.confidenceCi.toFixed(3)}</td>
                     <td className="px-1.5 py-1 text-center border-r border-slate-200 dark:border-slate-700 bg-blue-50/30 dark:bg-blue-900/5">
@@ -530,6 +638,7 @@ export function NationalCampusRanking({
                     </td>
                     
                     {/* PEQM */}
+                    <td className="px-1.5 py-1 text-right text-emerald-600 dark:text-emerald-300 bg-emerald-50/30 dark:bg-emerald-900/5">{eliteZRankMap.get(item.id) ?? '-'}</td>
                     <td className="px-1.5 py-1 text-right font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50/30 dark:bg-emerald-900/5">{item.eliteZ.toFixed(2)}</td>
                     <td className="px-1.5 py-1 text-right text-slate-600 dark:text-slate-300 bg-emerald-50/30 dark:bg-emerald-900/5">{item.eliteCv.toFixed(1)}%</td>
                     <td className="px-1.5 py-1 text-center bg-emerald-50/30 dark:bg-emerald-900/5">

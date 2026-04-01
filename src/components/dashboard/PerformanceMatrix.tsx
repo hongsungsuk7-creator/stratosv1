@@ -17,13 +17,128 @@ ChartJS.register(LinearScale, PointElement, LineElement, Tooltip, Legend, Title)
 
 export function PerformanceMatrix({
   onCampusSelect,
+  hideHeading = false,
 }: {
   onCampusSelect?: (campusName: string) => void;
+  /** 상위(대시보드 접기 섹션 등)에 제목이 있을 때 상단 제목 행만 숨김 */
+  hideHeading?: boolean;
 }) {
   const { campusRankingData } = useExcelData();
   const sourceRows = campusRankingData ?? mockData;
 
   const [selectedCampus, setSelectedCampus] = useState<CampusRankingData | null>(null);
+
+  type RankStat = { rank: number; total: number };
+
+  const buildRankStatMap = (
+    rows: CampusRankingData[],
+    getValue: (row: CampusRankingData) => number,
+    direction: 'asc' | 'desc' = 'desc',
+  ) => {
+    const sorted = [...rows].sort((a, b) =>
+      direction === 'desc' ? getValue(b) - getValue(a) : getValue(a) - getValue(b),
+    );
+    const total = sorted.length;
+    const rankMap = new Map<number, RankStat>();
+    sorted.forEach((row, index) => {
+      rankMap.set(row.id, { rank: index + 1, total });
+    });
+    return rankMap;
+  };
+
+  const pScoreOverallRankMap = buildRankStatMap(sourceRows, (row) => row.pScore, 'desc');
+  const pScoreDirectRankMap = buildRankStatMap(
+    sourceRows.filter((row) => row.type === '직영'),
+    (row) => row.pScore,
+    'desc',
+  );
+  const pScoreBranchRankMap = buildRankStatMap(
+    sourceRows.filter((row) => row.type === '분원'),
+    (row) => row.pScore,
+    'desc',
+  );
+  const pScoreRegionRankMaps = new Map<string, Map<number, RankStat>>();
+  [...new Set(sourceRows.map((row) => row.region))].forEach((region) => {
+    pScoreRegionRankMaps.set(
+      region,
+      buildRankStatMap(
+        sourceRows.filter((row) => row.region === region),
+        (row) => row.pScore,
+        'desc',
+      ),
+    );
+  });
+
+  const zScoreOverallRankMap = buildRankStatMap(sourceRows, (row) => row.zScore, 'desc');
+  const zScoreDirectRankMap = buildRankStatMap(
+    sourceRows.filter((row) => row.type === '직영'),
+    (row) => row.zScore,
+    'desc',
+  );
+  const zScoreBranchRankMap = buildRankStatMap(
+    sourceRows.filter((row) => row.type === '분원'),
+    (row) => row.zScore,
+    'desc',
+  );
+  const zScoreRegionRankMaps = new Map<string, Map<number, RankStat>>();
+  [...new Set(sourceRows.map((row) => row.region))].forEach((region) => {
+    zScoreRegionRankMaps.set(
+      region,
+      buildRankStatMap(
+        sourceRows.filter((row) => row.region === region),
+        (row) => row.zScore,
+        'desc',
+      ),
+    );
+  });
+
+  const eliteZOverallRankMap = buildRankStatMap(sourceRows, (row) => row.eliteZ, 'desc');
+  const eliteZDirectRankMap = buildRankStatMap(
+    sourceRows.filter((row) => row.type === '직영'),
+    (row) => row.eliteZ,
+    'desc',
+  );
+  const eliteZBranchRankMap = buildRankStatMap(
+    sourceRows.filter((row) => row.type === '분원'),
+    (row) => row.eliteZ,
+    'desc',
+  );
+  const eliteZRegionRankMaps = new Map<string, Map<number, RankStat>>();
+  [...new Set(sourceRows.map((row) => row.region))].forEach((region) => {
+    eliteZRegionRankMaps.set(
+      region,
+      buildRankStatMap(
+        sourceRows.filter((row) => row.region === region),
+        (row) => row.eliteZ,
+        'desc',
+      ),
+    );
+  });
+
+  const eliteCvOverallRankMap = buildRankStatMap(sourceRows, (row) => row.eliteCv, 'asc');
+
+  const EMI_GRADE_LABEL: Record<string, string> = {
+    P: 'Perfect',
+    G: 'Growth',
+    U: 'Unbalanced',
+    L: 'Lack',
+  };
+  const EMI_GRADE_MEANING_KO: Record<string, string> = {
+    P: '완벽모델 / 완전 무결점 모델',
+    G: '성장 단계',
+    U: '편차 과다',
+    L: '구조적 개선 필요',
+  };
+
+  const formatEmiTooltipLine = (grade: string) => {
+    const g = (grade || '').trim().toUpperCase();
+    const label = EMI_GRADE_LABEL[g];
+    const meaning = EMI_GRADE_MEANING_KO[g];
+    if (label && meaning) {
+      return `EMI : ${g} (${label} - ${meaning})`;
+    }
+    return `EMI : ${grade || '-'}`;
+  };
 
   const commonOptions = {
     responsive: true,
@@ -114,7 +229,11 @@ export function PerformanceMatrix({
     ],
   };
 
-  const createTooltipHandler = (tooltipClass: string, formatLabel: (dataPoint: any, datasetLabel: string) => string[]) => {
+  const createTooltipHandler = (
+    tooltipClass: string,
+    formatLabel: (dataPoint: any, datasetLabel: string) => string[],
+    boxOptions?: { wrapText?: boolean; maxWidthPx?: number },
+  ) => {
     return (context: any) => {
       const {chart, tooltip} = context;
       let tooltipEl = chart.canvas.parentNode.querySelector(`div.${tooltipClass}`);
@@ -127,13 +246,18 @@ export function PerformanceMatrix({
         tooltipEl.style.color = 'white';
         tooltipEl.style.opacity = '1';
         tooltipEl.style.pointerEvents = 'none';
-        tooltipEl.style.position = 'absolute';
-        tooltipEl.style.transform = 'translate(-50%, 10px)';
+        tooltipEl.style.position = 'fixed';
+        tooltipEl.style.transform = 'none';
         tooltipEl.style.transition = 'all .1s ease';
         tooltipEl.style.border = '1px solid #334155';
         tooltipEl.style.padding = '12px';
-        tooltipEl.style.zIndex = '50';
-        tooltipEl.style.whiteSpace = 'nowrap';
+        tooltipEl.style.zIndex = '9999';
+        tooltipEl.style.whiteSpace = boxOptions?.wrapText ? 'normal' : 'nowrap';
+        tooltipEl.style.maxWidth = boxOptions?.wrapText
+          ? `min(${boxOptions.maxWidthPx ?? 420}px, calc(100vw - 24px))`
+          : '';
+        tooltipEl.style.lineHeight = '1.45';
+        tooltipEl.style.boxSizing = 'border-box';
         tooltipEl.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
         
         chart.canvas.parentNode.appendChild(tooltipEl);
@@ -173,13 +297,39 @@ export function PerformanceMatrix({
         tooltipEl.innerHTML = innerHtml;
       }
 
-      const {offsetLeft: positionX, offsetTop: positionY} = chart.canvas;
+      if (boxOptions?.wrapText) {
+        tooltipEl.style.whiteSpace = 'normal';
+        tooltipEl.style.maxWidth = `min(${boxOptions.maxWidthPx ?? 420}px, calc(100vw - 24px))`;
+      }
+
+      const canvasRect = chart.canvas.getBoundingClientRect();
+      const tooltipWidth = tooltipEl.offsetWidth;
+      const tooltipHeight = tooltipEl.offsetHeight;
+      const padding = 8;
+      const vw = typeof window !== 'undefined' ? window.innerWidth : 1024;
+      const vh = typeof window !== 'undefined' ? window.innerHeight : 768;
+
+      let left = canvasRect.left + tooltip.caretX - tooltipWidth / 2;
+      left = Math.max(padding, Math.min(left, vw - tooltipWidth - padding));
+
+      let top = canvasRect.top + tooltip.caretY + 12;
+      if (top + tooltipHeight > vh - padding) {
+        top = canvasRect.top + tooltip.caretY - tooltipHeight - 12;
+      }
+      top = Math.max(padding, Math.min(top, vh - tooltipHeight - padding));
 
       tooltipEl.style.opacity = '1';
-      tooltipEl.style.left = positionX + tooltip.caretX + 'px';
-      tooltipEl.style.top = positionY + tooltip.caretY + 'px';
+      tooltipEl.style.position = 'fixed';
+      tooltipEl.style.left = `${left}px`;
+      tooltipEl.style.top = `${top}px`;
     };
   };
+
+  const formatRankWithTotal = (rankStat?: RankStat) =>
+    rankStat ? `${rankStat.rank}/${rankStat.total}` : '-';
+
+  const balanceCvOverallRankMap = buildRankStatMap(sourceRows, (row) => row.balanceCv, 'asc');
+  const confidenceCiOverallRankMap = buildRankStatMap(sourceRows, (row) => row.confidenceCi, 'asc');
 
   const pScoreOptions = {
     ...commonOptions,
@@ -193,11 +343,25 @@ export function PerformanceMatrix({
       tooltip: {
         ...commonOptions.plugins.tooltip,
         enabled: false,
-        external: createTooltipHandler('chartjs-tooltip-pscore', (dataPoint) => [
-          `P-SCORE : ${dataPoint.x.toFixed(1)}%`,
-          `Balance CV : ${dataPoint.y.toFixed(2)}`,
-          `학생수 : ${dataPoint.data.students}명`
-        ]),
+        external: createTooltipHandler('chartjs-tooltip-pscore', (dataPoint) => {
+          const campus = dataPoint.data as CampusRankingData;
+          const balanceCvOverallRank = balanceCvOverallRankMap.get(campus.id);
+          const pScoreOverallRank = pScoreOverallRankMap.get(campus.id);
+          const pScoreTypeRank =
+            campus.type === '직영'
+              ? pScoreDirectRankMap.get(campus.id)
+              : pScoreBranchRankMap.get(campus.id);
+          const pScoreRegionRank = pScoreRegionRankMaps.get(campus.region)?.get(campus.id);
+          return [
+            `P-SCORE : ${dataPoint.x.toFixed(1)}%`,
+            `Balance CV : ${dataPoint.y.toFixed(2)} (${formatRankWithTotal(balanceCvOverallRank)})`,
+            `학생수 : ${campus.students}명`,
+            'P-SCORE 순위',
+            `- 전체 : ${formatRankWithTotal(pScoreOverallRank)}`,
+            `- ${campus.type} : ${formatRankWithTotal(pScoreTypeRank)}`,
+            `- ${campus.region} : ${formatRankWithTotal(pScoreRegionRank)}`,
+          ];
+        }),
         callbacks: {
           title: (context: any) => {
             const dataPoint = context[0].raw;
@@ -262,11 +426,25 @@ export function PerformanceMatrix({
       tooltip: {
         ...commonOptions.plugins.tooltip,
         enabled: false,
-        external: createTooltipHandler('chartjs-tooltip-pcram', (dataPoint, datasetLabel) => [
-          `Z-SCORE : ${dataPoint.x.toFixed(2)}`,
-          `신뢰 CI : ${dataPoint.y.toFixed(3)}`,
-          `등급 : ${dataPoint.data.coreGrade} ${datasetLabel}`
-        ]),
+        external: createTooltipHandler('chartjs-tooltip-pcram', (dataPoint, datasetLabel) => {
+          const campus = dataPoint.data as CampusRankingData;
+          const confidenceCiOverallRank = confidenceCiOverallRankMap.get(campus.id);
+          const zOverall = zScoreOverallRankMap.get(campus.id);
+          const zType =
+            campus.type === '직영'
+              ? zScoreDirectRankMap.get(campus.id)
+              : zScoreBranchRankMap.get(campus.id);
+          const zRegion = zScoreRegionRankMaps.get(campus.region)?.get(campus.id);
+          return [
+            `Z-SCORE : ${dataPoint.x.toFixed(2)}`,
+            `신뢰 CI : ${dataPoint.y.toFixed(3)} (${formatRankWithTotal(confidenceCiOverallRank)})`,
+            `등급 : ${campus.coreGrade} ${datasetLabel}`,
+            'Z-SCORE 순위',
+            `- 전체 : ${formatRankWithTotal(zOverall)}`,
+            `- ${campus.type} : ${formatRankWithTotal(zType)}`,
+            `- ${campus.region} : ${formatRankWithTotal(zRegion)}`,
+          ];
+        }),
         callbacks: {
           title: (context: any) => {
             const dataPoint = context[0].raw;
@@ -315,11 +493,29 @@ export function PerformanceMatrix({
       tooltip: {
         ...commonOptions.plugins.tooltip,
         enabled: false,
-        external: createTooltipHandler('chartjs-tooltip-peqm', (dataPoint) => [
-          `Elite Z : ${dataPoint.x.toFixed(2)}`,
-          `Elite CV : ${dataPoint.y.toFixed(1)}%`,
-          `EMI : ${dataPoint.data.emiGrade}`
-        ]),
+        external: createTooltipHandler(
+          'chartjs-tooltip-peqm',
+          (dataPoint) => {
+            const campus = dataPoint.data as CampusRankingData;
+            const eliteCvOverall = eliteCvOverallRankMap.get(campus.id);
+            const eliteZOverall = eliteZOverallRankMap.get(campus.id);
+            const eliteZType =
+              campus.type === '직영'
+                ? eliteZDirectRankMap.get(campus.id)
+                : eliteZBranchRankMap.get(campus.id);
+            const eliteZRegion = eliteZRegionRankMaps.get(campus.region)?.get(campus.id);
+            return [
+              `Elite Z : ${dataPoint.x.toFixed(2)}`,
+              `Elite CV : ${dataPoint.y.toFixed(1)}% (${formatRankWithTotal(eliteCvOverall)})`,
+              formatEmiTooltipLine(campus.emiGrade),
+              'Elite Z 순위',
+              `- 전체 : ${formatRankWithTotal(eliteZOverall)}`,
+              `- ${campus.type} : ${formatRankWithTotal(eliteZType)}`,
+              `- ${campus.region} : ${formatRankWithTotal(eliteZRegion)}`,
+            ];
+          },
+          { wrapText: true, maxWidthPx: 440 },
+        ),
         callbacks: {
           title: (context: any) => {
             const dataPoint = context[0].raw;
@@ -382,14 +578,28 @@ export function PerformanceMatrix({
     }
   };
 
+  const selectedPScoreOverallRank = selectedCampus ? pScoreOverallRankMap.get(selectedCampus.id) : undefined;
+  const selectedBalanceCvOverallRank = selectedCampus ? balanceCvOverallRankMap.get(selectedCampus.id) : undefined;
+  const selectedPScoreTypeRank = selectedCampus
+    ? (selectedCampus.type === '직영'
+      ? pScoreDirectRankMap.get(selectedCampus.id)
+      : pScoreBranchRankMap.get(selectedCampus.id))
+    : undefined;
+  const selectedPScoreRegionRank = selectedCampus
+    ? pScoreRegionRankMaps.get(selectedCampus.region)?.get(selectedCampus.id)
+    : undefined;
+  const selectedZScoreOverallRank = selectedCampus ? zScoreOverallRankMap.get(selectedCampus.id) : undefined;
+  const selectedConfidenceCiOverallRank = selectedCampus ? confidenceCiOverallRankMap.get(selectedCampus.id) : undefined;
+  const selectedEliteZOverallRank = selectedCampus ? eliteZOverallRankMap.get(selectedCampus.id) : undefined;
+  const selectedEliteCvOverallRank = selectedCampus ? eliteCvOverallRankMap.get(selectedCampus.id) : undefined;
+
   return (
-    <div className="mb-6">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
+    <div className={hideHeading ? '' : 'mb-6'}>
+      {!hideHeading ? (
+        <div className="mb-3 flex items-center justify-between">
           <h2 className="text-lg font-bold text-slate-800 dark:text-white">Performance Matrix</h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400">점 클릭 시 캠퍼스 표 이동 및 상세 정보 확인</p>
         </div>
-      </div>
+      ) : null}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Panel 1: P-SCORE */}
@@ -440,48 +650,76 @@ export function PerformanceMatrix({
 
       {/* Selected Campus Panel */}
       {selectedCampus && (
-        <div className="mt-4 bg-white dark:bg-[#0f172a] border border-indigo-200 dark:border-indigo-800 rounded-xl p-4 shadow-lg dark:shadow-[0_0_20px_rgba(99,102,241,0.1)] animate-in fade-in slide-in-from-bottom-4 duration-300">
-          <div className="flex items-center gap-2 mb-3">
+        <div className="mt-4 bg-white dark:bg-[#0f172a] border border-indigo-200 dark:border-indigo-800 rounded-xl p-3 shadow-lg dark:shadow-[0_0_20px_rgba(99,102,241,0.1)] animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <div className="flex items-center gap-2 mb-2">
             <div className="w-1.5 h-4 bg-indigo-500 rounded-full"></div>
             <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400">선택 캠퍼스</h3>
           </div>
           
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
             {/* Left Area: Basic Info */}
-            <div className="lg:col-span-1 bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4 border border-slate-200 dark:border-slate-700 flex flex-col justify-center">
-              <h4 className="text-xl font-bold text-slate-800 dark:text-white mb-3 pb-3 border-b border-slate-200 dark:border-slate-700">
-                {selectedCampus.campus.replace('폴리어학원(', '').replace(')', '')}
+            <div className="lg:col-span-1 bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3 border border-slate-200 dark:border-slate-700 flex flex-col justify-center">
+              <h4 className="text-xl font-bold text-slate-800 dark:text-white mb-2 pb-2 border-b border-slate-200 dark:border-slate-700 flex items-center flex-wrap gap-x-2 gap-y-1">
+                <span>{selectedCampus.campus.replace('폴리어학원(', '').replace(')', '')}</span>
+                <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                  ({selectedCampus.type} · {selectedCampus.region})
+                </span>
               </h4>
-              <div className="space-y-2.5">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-slate-500 dark:text-slate-400">운영주체</span>
-                  <span className="text-sm font-medium text-slate-800 dark:text-slate-200">{selectedCampus.type}</span>
+              <div className="space-y-2">
+                <div className="text-[11px] text-slate-600 dark:text-slate-300 leading-5">
+                  <span className="font-medium">P-SCORE 순위 :</span>{' '}
+                  <span className="mr-4">전체 <span className="font-bold">{formatRankWithTotal(selectedPScoreOverallRank)}</span> {selectedPScoreOverallRank?.rank === 1 ? '🥇' : ''}</span>
+                  <span className="mr-4">{selectedCampus.type} 내 <span className="font-bold">{formatRankWithTotal(selectedPScoreTypeRank)}</span></span>
+                  <span>{selectedCampus.region} <span className="font-bold">{formatRankWithTotal(selectedPScoreRegionRank)}</span></span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-xs text-slate-500 dark:text-slate-400">TPI 등급</span>
-                  <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 px-2 py-0.5 rounded">{selectedCampus.coreGrade}</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400">TPI 등급 / 순위</span>
+                  <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 px-2 py-0.5 rounded">
+                    {selectedCampus.coreGrade}
+                    <span className="ml-1 text-xs font-medium text-indigo-500 dark:text-indigo-300">
+                      ({formatRankWithTotal(selectedZScoreOverallRank)})
+                    </span>
+                  </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-xs text-slate-500 dark:text-slate-400">EMI 등급</span>
-                  <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded">{selectedCampus.emiGrade}</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400">EMI 등급 / 순위</span>
+                  <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded">
+                    {selectedCampus.emiGrade}
+                    <span className="ml-1 text-xs font-medium text-emerald-500 dark:text-emerald-300">
+                      ({formatRankWithTotal(selectedEliteZOverallRank)})
+                    </span>
+                  </span>
                 </div>
               </div>
             </div>
 
             {/* Right Area: Performance Metrics */}
-            <div className="lg:col-span-2 bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4 border border-slate-200 dark:border-slate-700 flex items-center">
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-4 gap-x-4 w-full">
+            <div className="lg:col-span-2 bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3 border border-slate-200 dark:border-slate-700 flex items-center">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-4 w-full">
                 <div>
                   <div className="text-[11px] text-slate-500 dark:text-slate-400 mb-0.5">P-SCORE</div>
-                  <div className="text-lg font-bold text-slate-800 dark:text-white">{selectedCampus.pScore.toFixed(1)}%</div>
+                  <div className="text-lg font-bold text-slate-800 dark:text-white">
+                    {selectedCampus.pScore.toFixed(1)}%
+                    <span className="ml-1 text-xs font-medium text-slate-500 dark:text-slate-400">
+                      (<span className="font-bold text-slate-600 dark:text-slate-300">{formatRankWithTotal(selectedPScoreOverallRank)}</span>)
+                    </span>
+                  </div>
                 </div>
                 <div>
                   <div className="text-[11px] text-slate-500 dark:text-slate-400 mb-0.5">Balance CV</div>
-                  <div className="text-lg font-bold text-slate-800 dark:text-white">{selectedCampus.balanceCv.toFixed(1)}</div>
+                  <div className="text-lg font-bold text-slate-800 dark:text-white">
+                    {selectedCampus.balanceCv.toFixed(1)}
+                    <span className="ml-1 text-xs font-medium text-slate-500 dark:text-slate-400">
+                      (<span className="font-bold text-slate-600 dark:text-slate-300">{formatRankWithTotal(selectedBalanceCvOverallRank)}</span>)
+                    </span>
+                  </div>
                 </div>
                 <div>
                   <div className="text-[11px] text-slate-500 dark:text-slate-400 mb-0.5">Z-Score / CI</div>
                   <div className="text-lg font-bold text-slate-800 dark:text-white">{selectedCampus.zScore.toFixed(2)} / {selectedCampus.confidenceCi.toFixed(3)}</div>
+                  <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
+                    Z: <span className="font-bold text-slate-600 dark:text-slate-300">{formatRankWithTotal(selectedZScoreOverallRank)}</span> · CI: <span className="font-bold text-slate-600 dark:text-slate-300">{formatRankWithTotal(selectedConfidenceCiOverallRank)}</span>
+                  </div>
                 </div>
                 <div>
                   <div className="text-[11px] text-slate-500 dark:text-slate-400 mb-0.5">진단 유형</div>
@@ -492,6 +730,9 @@ export function PerformanceMatrix({
                 <div>
                   <div className="text-[11px] text-slate-500 dark:text-slate-400 mb-0.5">Elite Z / CV</div>
                   <div className="text-lg font-bold text-slate-800 dark:text-white">{selectedCampus.eliteZ.toFixed(2)} / {selectedCampus.eliteCv.toFixed(1)}</div>
+                  <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
+                    Elite Z: <span className="font-bold text-slate-600 dark:text-slate-300">{formatRankWithTotal(selectedEliteZOverallRank)}</span> · Elite CV: <span className="font-bold text-slate-600 dark:text-slate-300">{formatRankWithTotal(selectedEliteCvOverallRank)}</span>
+                  </div>
                 </div>
                 <div>
                   <div className="text-[11px] text-slate-500 dark:text-slate-400 mb-0.5">학생수 / 학급수</div>

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { 
-  LayoutDashboard, BarChart3, AlertTriangle, ShieldCheck, Trophy, Database,
+  LayoutDashboard, BarChart3, AlertTriangle, ShieldCheck, Database,
   Microscope, FileText, Target, Sliders, Archive,
-  Users, UserCircle, Lightbulb, ChevronLeft, ChevronRight, ChevronDown,
+  Users, ChevronLeft, ChevronRight, ChevronDown,
   Settings, PlayCircle
 } from 'lucide-react';
 import { TutorialModal } from './TutorialModal';
@@ -48,7 +48,6 @@ export function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
         { id: 'pscore', label: 'P-Score', icon: BarChart3 },
         { id: 'pcram', label: 'PC-RAM', icon: AlertTriangle },
         { id: 'peqm', label: 'PEQM', icon: ShieldCheck },
-        { id: 'eqs', label: '3P-EQS', icon: Trophy },
       ]
     },
     {
@@ -60,8 +59,6 @@ export function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
         { id: 'campus-pcram', label: 'PC-RAM', icon: AlertTriangle },
         { id: 'campus-peqm', label: 'PEQM', icon: ShieldCheck },
         { id: 'class-analysis', label: 'Class Analysis', icon: Users },
-        { id: 'student-analysis', label: 'Student Analysis', icon: UserCircle },
-        { id: 'teaching-insight', label: 'Teaching Insight', icon: Lightbulb },
       ]
     },
     {
@@ -103,34 +100,40 @@ export function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
 
   return (
     <div 
-      className={`${isCollapsed ? 'w-20' : 'w-64'} bg-slate-900 text-white flex flex-col h-full overflow-y-auto transition-all duration-300 ease-in-out relative`}
+      className={`${isCollapsed ? 'w-20' : 'w-64'} relative flex h-full min-h-0 flex-col overflow-visible transition-all duration-300 ease-in-out
+        bg-[#f8f9fb] text-slate-900 border-r border-slate-200/90
+        dark:bg-slate-900 dark:text-white dark:border-slate-800`}
     >
-      <div className={`p-6 flex items-center ${isCollapsed ? 'justify-center' : 'space-x-3'} sticky top-0 bg-slate-900 z-10 min-h-[88px]`}>
-        <Database className="w-8 h-8 text-indigo-400 shrink-0" />
+      <div className={`flex shrink-0 items-center p-6 min-h-[88px]
+        bg-[#f8f9fb] dark:bg-slate-900 ${isCollapsed ? 'justify-center' : 'space-x-3'}`}>
+        <Database className="w-8 h-8 text-indigo-600 shrink-0 dark:text-indigo-400" strokeWidth={1.75} />
         {!isCollapsed && (
-          <div className="overflow-hidden whitespace-nowrap">
-            <h1 className="text-xl font-bold tracking-wider">STRATOS</h1>
-            <p className="text-xs text-slate-400">L.A.B.S. Analytics</p>
+          <div className="overflow-hidden whitespace-nowrap min-w-0">
+            <h1 className="text-xl font-bold tracking-wide text-slate-900 dark:text-white">STRATOS</h1>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium tracking-tight mt-0.5">
+              L.A.B.S. Analytics
+            </p>
           </div>
         )}
       </div>
 
       <button
+        type="button"
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="absolute top-7 right-[-12px] bg-slate-800 text-slate-300 hover:text-white p-1 rounded-full border border-slate-700 z-50 transition-colors"
-        style={{ right: '12px' }}
+        aria-label={isCollapsed ? '사이드바 펼치기' : '사이드바 접기'}
+        className="absolute left-full top-5 z-[80] flex h-7 w-7 -translate-x-1/2 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-md transition-colors hover:border-slate-300 hover:text-slate-800 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-slate-500 dark:hover:text-white"
       >
-        {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+        {isCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
       </button>
       
-      <div className="flex-1 px-4 pb-6 space-y-6 mt-2">
+      <div className="mt-2 min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-4 pb-6 space-y-6">
         {menuGroups.map((group, idx) => {
           const isGroupExpanded = expandedGroups[group.title];
           return (
             <div key={idx}>
               <button 
                 onClick={() => toggleGroup(group.title)}
-                className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ${isCollapsed ? 'px-0' : 'px-2'} hover:text-slate-300 transition-colors`}
+                className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 ${isCollapsed ? 'px-0' : 'px-2'} hover:text-slate-600 transition-colors dark:text-slate-500 dark:hover:text-slate-300`}
               >
                 <span>{isCollapsed ? group.shortTitle : group.title}</span>
                 {!isCollapsed && (
@@ -157,29 +160,37 @@ export function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
                             }
                           }}
                           title={isCollapsed ? item.label : undefined}
-                          className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors text-sm ${
-                            isActive && !hasSubItems ? 'bg-indigo-600 text-white' : 'text-slate-300 hover:bg-slate-800'
+                          className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-colors text-sm ${
+                            isActive && !hasSubItems
+                              ? 'bg-indigo-600 text-white shadow-sm'
+                              : 'text-slate-700 hover:bg-slate-200/60 dark:text-slate-300 dark:hover:bg-slate-800'
                           }`}
                         >
                           <div className={`flex items-center ${isCollapsed ? 'justify-center w-full' : 'space-x-3'}`}>
-                            <Icon className={`w-5 h-5 shrink-0 ${isActive && hasSubItems ? 'text-indigo-400' : ''}`} />
+                            <Icon className={`w-5 h-5 shrink-0 ${
+                              isActive && !hasSubItems ? 'text-white' : isActive && hasSubItems ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-400'
+                            }`} />
                             {!isCollapsed && (
-                              <span className={`font-medium whitespace-nowrap overflow-hidden text-ellipsis ${isActive && hasSubItems ? 'text-white' : ''}`}>{item.label}</span>
+                              <span className={`font-medium whitespace-nowrap overflow-hidden text-ellipsis ${
+                                isActive && hasSubItems ? 'text-slate-900 dark:text-white' : ''
+                              }`}>{item.label}</span>
                             )}
                           </div>
                           {!isCollapsed && hasSubItems && (
-                            isExpanded ? <ChevronDown className="w-4 h-4 text-slate-400" /> : <ChevronRight className="w-4 h-4 text-slate-400" />
+                            isExpanded ? <ChevronDown className="w-4 h-4 text-slate-400 dark:text-slate-500" /> : <ChevronRight className="w-4 h-4 text-slate-400 dark:text-slate-500" />
                           )}
                         </button>
                         
                         {!isCollapsed && hasSubItems && isExpanded && (
-                          <div className="mt-1 mb-2 ml-4 pl-4 border-l border-slate-700 space-y-1">
+                          <div className="mt-1 mb-2 ml-4 pl-4 border-l border-slate-200 dark:border-slate-700 space-y-1">
                             {item.subItems.map((subItem: any) => (
                               <button
                                 key={subItem.id}
                                 onClick={() => setActiveTab(subItem.id)}
                                 className={`w-full flex items-center px-3 py-2 rounded-lg transition-colors text-sm ${
-                                  activeTab === subItem.id ? 'bg-indigo-600/20 text-indigo-400 font-medium' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                                  activeTab === subItem.id
+                                    ? 'bg-indigo-50 text-indigo-700 font-medium dark:bg-indigo-600/20 dark:text-indigo-400'
+                                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800'
                                 }`}
                               >
                                 <span className="whitespace-nowrap overflow-hidden text-ellipsis">{subItem.label}</span>
@@ -197,11 +208,13 @@ export function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
         })}
       </div>
       
-      <div className="p-4 border-t border-slate-800 sticky bottom-0 bg-slate-900 space-y-4">
+      <div className="shrink-0 space-y-4 border-t border-slate-200 bg-[#f8f9fb] p-4 dark:border-slate-800 dark:bg-slate-900">
         {/* Tutorial Button */}
         <button 
           onClick={() => setIsTutorialOpen(true)}
-          className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'space-x-2 px-3'} py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors text-sm`}
+          className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'space-x-2 px-3'} py-2 rounded-lg transition-colors text-sm
+            bg-slate-200/80 hover:bg-slate-200 text-slate-700
+            dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300`}
           title={isCollapsed ? "튜토리얼 보기" : undefined}
         >
           <PlayCircle className="w-5 h-5 shrink-0" />
@@ -218,18 +231,18 @@ export function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
             </div>
             {!isCollapsed && (
               <div className="flex flex-col">
-                <span className="text-sm font-medium text-white">김폴리</span>
-                <span className="text-xs text-slate-400">poly.kim</span>
+                <span className="text-sm font-medium text-slate-900 dark:text-white">김폴리</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400">poly.kim</span>
               </div>
             )}
           </div>
           {!isCollapsed && (
-            <button className="text-slate-500 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-md hover:bg-slate-800">
+            <button className="text-slate-400 hover:text-slate-700 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-md hover:bg-slate-200 dark:text-slate-500 dark:hover:text-white dark:hover:bg-slate-800">
               <Settings className="w-4 h-4" />
             </button>
           )}
           {isCollapsed && (
-            <div className="absolute left-full ml-2 px-2 py-1 bg-slate-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50">
+            <div className="absolute left-full ml-2 px-2 py-1 bg-white border border-slate-200 text-slate-800 text-xs rounded shadow-md opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 dark:bg-slate-800 dark:border-slate-700 dark:text-white">
               김폴리 (poly.kim)
             </div>
           )}

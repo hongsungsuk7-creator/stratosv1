@@ -344,14 +344,7 @@ export function CampusPerformanceMatrix() {
   };
 
   return (
-    <div className="mb-6">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <h2 className="text-lg font-bold text-slate-800 dark:text-white">Performance Matrix</h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400">학급별 성과 분석 (전국 평균 대비)</p>
-        </div>
-      </div>
-
+    <div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />

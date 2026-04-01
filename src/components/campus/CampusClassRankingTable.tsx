@@ -86,6 +86,27 @@ export function CampusClassRankingTable({ selectedLevel, selectedClass, isStuden
     return sortDirection === 'desc' ? numB - numA : numA - numB;
   });
 
+  const buildScoreRankMap = (rows: any[], getValue: (row: any) => number) => {
+    const sorted = [...rows].sort((a, b) => getValue(b) - getValue(a));
+    const rankMap = new Map<number, number>();
+    let prevValue: number | null = null;
+    let prevRank = 0;
+
+    sorted.forEach((row, index) => {
+      const value = getValue(row);
+      const rank = prevValue !== null && value === prevValue ? prevRank : index + 1;
+      rankMap.set(row.id, rank);
+      prevValue = value;
+      prevRank = rank;
+    });
+
+    return rankMap;
+  };
+
+  const pScoreRankMap = buildScoreRankMap(displayData, (row) => row.pScore);
+  const zScoreRankMap = buildScoreRankMap(displayData, (row) => row.zScore);
+  const peqmRankMap = buildScoreRankMap(displayData, (row) => row.peqmScore);
+
   const SortButton = ({ criteria, label, align = 'center' }: { criteria: string, label: string, align?: 'center' | 'right' | 'left' }) => {
     const isActive = sortCriteria === criteria;
     
@@ -107,45 +128,33 @@ export function CampusClassRankingTable({ selectedLevel, selectedClass, isStuden
   };
 
   return (
-    <div id="campus-class-ranking" className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-      <div className="p-6 border-b border-slate-200 dark:border-slate-700">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              {isStudentView ? '학생별 성취도 상세' : '캠퍼스 학급별 랭킹'}
-              <span className="text-sm font-normal text-slate-500 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-full">
-                {displayData.length}개 {isStudentView ? '학생' : '학급'}
-              </span>
-            </h2>
-          </div>
-          
-          <div className="flex flex-wrap items-center gap-3">
-            <button
-              onClick={handleDownloadExcel}
-              className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50 rounded-lg text-sm font-medium transition-colors border border-emerald-200 dark:border-emerald-800"
-            >
-              <Download className="w-4 h-4" />
-              Excel 다운로드
-            </button>
-          </div>
-        </div>
+    <div id="campus-class-ranking" className="min-w-0 overflow-hidden">
+      <div className="flex justify-end border-b border-slate-200 px-3 py-2 dark:border-slate-700">
+        <button
+          type="button"
+          onClick={handleDownloadExcel}
+          className="flex items-center gap-1.5 rounded-full border border-slate-200/90 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-slate-500 dark:hover:bg-slate-700/80 dark:hover:text-white"
+        >
+          <Download className="h-4 w-4 shrink-0 opacity-80" />
+          Excel 다운로드
+        </button>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="max-h-[min(520px,65vh)] overflow-auto">
         <table className="w-full text-sm text-left">
-          <thead className="text-xs text-slate-700 dark:text-slate-300 uppercase bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
+          <thead className="sticky top-0 z-20 border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-700 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
             {/* Top Header Row */}
             <tr>
               <th colSpan={isStudentView ? 6 : 7} className="px-4 py-3 text-center border-r border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
                 기본 정보
               </th>
-              <th colSpan={2} className="px-4 py-3 text-center border-r border-slate-200 dark:border-slate-700 bg-orange-50 dark:bg-orange-900/20 text-orange-800 dark:text-orange-300">
+              <th colSpan={3} className="px-4 py-3 text-center border-r border-slate-200 dark:border-slate-700 bg-orange-50 dark:bg-orange-900/20 text-orange-800 dark:text-orange-300">
                 P-SCORE 영역
               </th>
-              <th colSpan={3} className="px-4 py-3 text-center border-r border-slate-200 dark:border-slate-700 bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300">
+              <th colSpan={4} className="px-4 py-3 text-center border-r border-slate-200 dark:border-slate-700 bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300">
                 PC-RAM 영역
               </th>
-              <th colSpan={3} className="px-4 py-3 text-center bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-300">
+              <th colSpan={4} className="px-4 py-3 text-center bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-300">
                 PEQM 영역
               </th>
             </tr>
@@ -172,15 +181,18 @@ export function CampusClassRankingTable({ selectedLevel, selectedClass, isStuden
               )}
               
               {/* P-SCORE */}
+              <th className="px-4 py-3 font-semibold text-right bg-orange-50/50 dark:bg-orange-900/10"><SortButton criteria="pScore" label="순위" align="right" /></th>
               <th className="px-4 py-3 font-semibold text-right bg-orange-50/50 dark:bg-orange-900/10"><SortButton criteria="pScore" label="P-SCORE" align="right" /></th>
               <th className="px-4 py-3 font-semibold text-right border-r border-slate-200 dark:border-slate-700 bg-orange-50/50 dark:bg-orange-900/10"><SortButton criteria="ar" label="AR" align="right" /></th>
               
               {/* PC-RAM */}
+              <th className="px-4 py-3 font-semibold text-right bg-blue-50/50 dark:bg-blue-900/10"><SortButton criteria="zScore" label="순위" align="right" /></th>
               <th className="px-4 py-3 font-semibold text-right bg-blue-50/50 dark:bg-blue-900/10"><SortButton criteria="zScore" label="Z-Score" align="right" /></th>
               <th className="px-4 py-3 font-semibold text-right bg-blue-50/50 dark:bg-blue-900/10"><SortButton criteria="cv" label="CV" align="right" /></th>
               <th className="px-4 py-3 font-semibold text-center border-r border-slate-200 dark:border-slate-700 bg-blue-50/50 dark:bg-blue-900/10"><SortButton criteria="pScore" label="핵심 등급" /></th>
               
               {/* PEQM */}
+              <th className="px-4 py-3 font-semibold text-right bg-emerald-50/50 dark:bg-emerald-900/10"><SortButton criteria="peqmScore" label="순위" align="right" /></th>
               <th className="px-4 py-3 font-semibold text-center bg-emerald-50/50 dark:bg-emerald-900/10"><SortButton criteria="peqm" label="PEQM" /></th>
               <th className="px-4 py-3 font-semibold text-right bg-emerald-50/50 dark:bg-emerald-900/10"><SortButton criteria="peqmScore" label="PEQM 점수" align="right" /></th>
               <th className="px-4 py-3 font-semibold text-center bg-emerald-50/50 dark:bg-emerald-900/10"><SortButton criteria="pcramStatus" label="PC-RAM 상태" /></th>
@@ -210,10 +222,12 @@ export function CampusClassRankingTable({ selectedLevel, selectedClass, isStuden
                 )}
                 
                 {/* P-SCORE */}
+                <td className="px-4 py-3 text-right text-orange-600 dark:text-orange-300 bg-orange-50/30 dark:bg-orange-900/5">{pScoreRankMap.get(item.id) ?? '-'}</td>
                 <td className="px-4 py-3 text-right font-medium text-orange-600 dark:text-orange-400 bg-orange-50/30 dark:bg-orange-900/5">{item.pScore.toFixed(1)}%</td>
                 <td className="px-4 py-3 text-right text-slate-600 dark:text-slate-300 border-r border-slate-200 dark:border-slate-700 bg-orange-50/30 dark:bg-orange-900/5">{item.ar.toFixed(1)}%</td>
                 
                 {/* PC-RAM */}
+                <td className="px-4 py-3 text-right text-blue-600 dark:text-blue-300 bg-blue-50/30 dark:bg-blue-900/5">{zScoreRankMap.get(item.id) ?? '-'}</td>
                 <td className="px-4 py-3 text-right font-medium text-blue-600 dark:text-blue-400 bg-blue-50/30 dark:bg-blue-900/5">{item.zScore.toFixed(2)}</td>
                 <td className="px-4 py-3 text-right text-slate-600 dark:text-slate-300 bg-blue-50/30 dark:bg-blue-900/5">{item.cv.toFixed(1)}%</td>
                 <td className="px-4 py-3 text-center border-r border-slate-200 dark:border-slate-700 bg-blue-50/30 dark:bg-blue-900/5">
@@ -227,6 +241,7 @@ export function CampusClassRankingTable({ selectedLevel, selectedClass, isStuden
                 </td>
                 
                 {/* PEQM */}
+                <td className="px-4 py-3 text-right text-emerald-600 dark:text-emerald-300 bg-emerald-50/30 dark:bg-emerald-900/5">{peqmRankMap.get(item.id) ?? '-'}</td>
                 <td className="px-4 py-3 text-center bg-emerald-50/30 dark:bg-emerald-900/5">
                   <span className={`px-2 py-0.5 rounded text-xs font-bold ${
                     item.peqm === 'G' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300' :

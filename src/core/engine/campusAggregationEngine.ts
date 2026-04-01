@@ -1,4 +1,4 @@
-import { DEFAULT_ANALYTICS_CONFIG } from '../config/defaultAnalyticsConfig';
+import { DEFAULT_ANALYTICS_CONFIG, TPI_PRESET_BY_MONTH, TPI_WEIGHT_PRESETS } from '../config/defaultAnalyticsConfig';
 import type { AnalyticsConfig, CampusMetricsOutput, StudentCleanRecord } from '../types/analytics';
 import { buildStudentDrillDown } from './kpiEngine';
 import { coefficientOfVariation, mean } from '../metrics/statHelpers';
@@ -49,8 +49,14 @@ function rankByTpi(campuses: CampusMetricsOutput[]): CampusMetricsOutput[] {
 export function runCampusAggregation(
   records: StudentCleanRecord[],
   config: AnalyticsConfig = DEFAULT_ANALYTICS_CONFIG,
+  options?: { examMonth?: number },
 ): CampusMetricsOutput[] {
   const students = buildStudentDrillDown(records, config);
+  const presetKey =
+    options?.examMonth && TPI_PRESET_BY_MONTH[options.examMonth]
+      ? TPI_PRESET_BY_MONTH[options.examMonth]
+      : 'standard';
+  const weights = TPI_WEIGHT_PRESETS[presetKey];
   const byCampus: Record<string, typeof students> = {};
   for (const student of students) {
     if (!byCampus[student.campus_id]) byCampus[student.campus_id] = [];
@@ -85,10 +91,11 @@ export function runCampusAggregation(
         Math.max(1, campusStudents.length)) *
       100;
     const EMI_grade = getEmiGrade(eliteZ, eliteCv, config);
-    let tpiScore =
-      ZP * config.tpi.weights.zp +
-      ZRAM * config.tpi.weights.zram +
-      eliteZ * config.tpi.weights.zeqm;
+    // TPI formula sync (3P-EQS): M1/M2/M3 weighted sum + NE penalty.
+    const M1 = P_score; // P-Score module
+    const M2 = P_score; // PC-RAM module score definition (avg_correct_rate × 100)
+    const M3 = P_score; // PEQM module score definition (campus_avg MT total)
+    let tpiScore = M1 * weights.w1 + M2 * weights.w2 + M3 * weights.w3;
     if (ne4OrNe5) tpiScore -= config.tpi.riskPenalty;
 
     const decimals = config.governance.decimalPlaces;

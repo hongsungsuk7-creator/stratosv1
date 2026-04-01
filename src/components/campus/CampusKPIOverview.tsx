@@ -4,7 +4,12 @@ import { CAMPUS_DATA, CLASSES_DATA, LEVELS, NATIONAL_AVERAGES } from '../../data
 type TypeFilter = '전체' | 'ECP' | 'ELE' | 'GRAD';
 type GradeFilter = '전체 등급' | '즉시관리군' | '우수군';
 
-export function CampusKPIOverview() {
+interface CampusKPIOverviewProps {
+  /** 상위 섹션 카드와 중복될 때 내부 바깥 카드(배경/테두리/라운딩) 제거 */
+  omitOuterCard?: boolean;
+}
+
+export function CampusKPIOverview({ omitOuterCard = false }: CampusKPIOverviewProps) {
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('전체');
   const [gradeFilter, setGradeFilter] = useState<GradeFilter>('전체 등급');
   const [filterCategory, setFilterCategory] = useState('레벨별');
@@ -55,7 +60,13 @@ export function CampusKPIOverview() {
   const emiLCount = filteredData.filter(item => item.pScore < 75).length; // Mocked EMI L
 
   return (
-    <div className="bg-white dark:bg-[#0f172a] text-slate-800 dark:text-white p-6 rounded-2xl shadow-sm dark:shadow-2xl border border-slate-200 dark:border-slate-800 relative overflow-hidden transition-colors duration-200">
+    <div
+      className={
+        omitOuterCard
+          ? 'relative overflow-hidden p-3 text-slate-800 transition-colors duration-200 dark:text-white'
+          : 'relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 text-slate-800 shadow-sm transition-colors duration-200 dark:border-slate-800 dark:bg-[#0f172a] dark:text-white dark:shadow-2xl'
+      }
+    >
       {/* Background glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-gradient-to-b from-indigo-500/5 dark:from-indigo-500/10 to-transparent pointer-events-none" />
       

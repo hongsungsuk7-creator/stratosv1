@@ -7,7 +7,9 @@ import { PerformanceMatrix } from '../components/dashboard/PerformanceMatrix';
 import { DistributionAndAverages } from '../components/dashboard/DistributionAndAverages';
 import { AlertsAndRankings, type CampusRankChange } from '../components/dashboard/AlertsAndRankings';
 import { CourseAnalysisCharts } from '../components/dashboard/CourseAnalysisCharts';
-import { NationalCampusRanking } from '../components/dashboard/NationalCampusRanking';
+import { mockData as campusRankingMockData, NationalCampusRanking } from '../components/dashboard/NationalCampusRanking';
+import { DashboardCollapsibleSection } from '../components/dashboard/DashboardCollapsibleSection';
+import { getExamCohortCampusCount } from '@/utils/examCohortCampusCount';
 
 import { examData_2025_09 } from '../data/examData';
 import { CAMPUS_LIST } from '../constants';
@@ -43,6 +45,12 @@ export function Dashboard({ userGroup }: { userGroup: UserGroup }) {
     const merged = [...fromStore, ...DEFAULT_TEST_OPTIONS];
     return [...new Set(merged)];
   }, [savedDatasets]);
+
+  const nationalRankingExamCohortCount = useMemo(
+    () =>
+      getExamCohortCampusCount(selectedTests, selectedYear, campusRankingMockData.length),
+    [selectedTests, selectedYear],
+  );
 
   useEffect(() => {
     if (!activeDataset) return;
@@ -132,27 +140,48 @@ export function Dashboard({ userGroup }: { userGroup: UserGroup }) {
         onSearch={handleSearch}
       />
 
-      {/* STRATOS KPI Overview */}
-      <StratosKPIOverview />
+      <DashboardCollapsibleSection title="요약">
+        <StratosKPIOverview />
+      </DashboardCollapsibleSection>
 
-      {/* Performance Matrix */}
-      <PerformanceMatrix onCampusSelect={setMatrixSelectedCampusName} />
+      <DashboardCollapsibleSection title="Performance Matrix" titleSuffix="점 클릭 시 캠퍼스 표 이동">
+        <PerformanceMatrix hideHeading onCampusSelect={setMatrixSelectedCampusName} />
+      </DashboardCollapsibleSection>
 
-      {/* Section 1: Course Analysis (Moved from Section 4) */}
-      <CourseAnalysisCharts 
-        testType={testType}
-        selectedYear={selectedYear}
-        selectedTests={selectedTests}
-      />
+      <DashboardCollapsibleSection title="과정별·캠퍼스별 분석">
+        <CourseAnalysisCharts
+          testType={testType}
+          selectedYear={selectedYear}
+          selectedTests={selectedTests}
+        />
+      </DashboardCollapsibleSection>
 
-      {/* Distribution and Averages */}
-      <DistributionAndAverages />
+      <DashboardCollapsibleSection title="순위 분포 및 과목 평균">
+        <DistributionAndAverages />
+      </DashboardCollapsibleSection>
 
-      {/* Section 2 & 3: Alerts & Campus Ranking */}
-      <AlertsAndRankings topCampuses={topCampuses} bottomCampuses={bottomCampuses} />
+      <DashboardCollapsibleSection title="캠퍼스 Top / Bottom Ranking">
+        <AlertsAndRankings topCampuses={topCampuses} bottomCampuses={bottomCampuses} />
+      </DashboardCollapsibleSection>
 
-      {/* Section 6: 전국 캠퍼스 랭킹 */}
-      <NationalCampusRanking highlightedCampusName={matrixSelectedCampusName} />
+      <DashboardCollapsibleSection
+        title="전국 캠퍼스 랭킹"
+        contentClassName="px-3 pb-3 pt-0"
+        titleAccessory={
+          <span className="shrink-0 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-normal text-slate-500 dark:bg-slate-700 dark:text-slate-400">
+            응시 {nationalRankingExamCohortCount}개 캠퍼스
+          </span>
+        }
+      >
+        <NationalCampusRanking
+          highlightedCampusName={matrixSelectedCampusName}
+          selectedYear={selectedYear}
+          selectedTests={selectedTests}
+          omitTitleHeading
+          omitOuterCard
+          hideExamCohortBadge
+        />
+      </DashboardCollapsibleSection>
     </div>
   );
 }

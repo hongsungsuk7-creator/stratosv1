@@ -29,14 +29,14 @@ export function SidebarExamDataPanel({ isCollapsed }: SidebarExamDataPanelProps)
   const closeModal = () => setModalOpen(false)
 
   /* 사이드바 보조 액션 — Sidebar.tsx 튜토리얼 버튼과 동일 톤 */
-  const panelBtnClass = `w-full flex items-center ${isCollapsed ? 'justify-center' : 'space-x-2 px-3'} py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors text-sm`
+  const panelBtnClass = `w-full flex items-center ${isCollapsed ? 'justify-center' : 'space-x-2 px-3'} py-2 rounded-lg transition-colors text-sm bg-slate-200/80 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300`
 
   const listSection = (
     <>
       <button
         type="button"
         onClick={() => setListOpen(!listOpen)}
-        className="w-full flex items-center justify-between px-2 py-1 text-xs text-slate-400 hover:text-slate-200"
+        className="w-full flex items-center justify-between px-2 py-1 text-xs text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
       >
         <span>등록된 자료 ({savedDatasets.length})</span>
         {listOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -45,7 +45,7 @@ export function SidebarExamDataPanel({ isCollapsed }: SidebarExamDataPanelProps)
       {listOpen && (
         <ul className="max-h-40 overflow-y-auto space-y-1 pr-0.5 hide-scrollbar">
           {savedDatasets.length === 0 && (
-            <li className="text-[11px] text-slate-500 px-1">브라우저에 저장된 자료가 없습니다.</li>
+            <li className="text-[11px] text-slate-500 dark:text-slate-500 px-1">브라우저에 저장된 자료가 없습니다.</li>
           )}
           {savedDatasets.map((d) => {
             const active = activeDataset?.id === d.id
@@ -59,26 +59,28 @@ export function SidebarExamDataPanel({ isCollapsed }: SidebarExamDataPanelProps)
               <li
                 key={d.id}
                 className={`rounded-md border text-[11px] leading-tight ${
-                  active ? 'border-indigo-500 bg-indigo-950/40' : 'border-slate-700 bg-slate-800/50'
+                  active
+                    ? 'border-indigo-400 bg-indigo-50 dark:border-indigo-500 dark:bg-indigo-950/40'
+                    : 'border-slate-200 bg-white/80 dark:border-slate-700 dark:bg-slate-800/50'
                 }`}
               >
                 <div className="flex items-start gap-1 p-1.5">
                   <button
                     type="button"
-                    className="flex-1 text-left text-slate-200 hover:text-white min-w-0"
+                    className="flex-1 text-left text-slate-700 hover:text-slate-900 min-w-0 dark:text-slate-200 dark:hover:text-white"
                     onClick={() => selectExamDataset(d.id)}
                   >
                     {active && <CheckCircle2 className="w-3 h-3 inline text-indigo-400 mr-0.5 align-middle" />}
                     {tag}
-                    <span className="font-semibold text-indigo-300">{d.year}</span>{' '}
-                    <span className="text-slate-400">{d.testKind}</span>
-                    <span className="block text-slate-300 truncate" title={d.examLabel}>
+                    <span className="font-semibold text-indigo-600 dark:text-indigo-300">{d.year}</span>{' '}
+                    <span className="text-slate-500 dark:text-slate-400">{d.testKind}</span>
+                    <span className="block text-slate-600 dark:text-slate-300 truncate" title={d.examLabel}>
                       {d.examLabel}
                     </span>
                   </button>
                   <button
                     type="button"
-                    className="p-1 text-slate-500 hover:text-rose-400 shrink-0"
+                    className="p-1 text-slate-400 hover:text-rose-500 shrink-0 dark:text-slate-500 dark:hover:text-rose-400"
                     title="삭제"
                     onClick={() => {
                       if (window.confirm(`이 자료를 삭제할까요?\n${d.examLabel}`)) {
@@ -99,7 +101,7 @@ export function SidebarExamDataPanel({ isCollapsed }: SidebarExamDataPanelProps)
         <button
           type="button"
           onClick={clearToSampleData}
-          className="w-full text-[11px] text-slate-500 hover:text-slate-300 py-1"
+          className="w-full text-[11px] text-slate-500 hover:text-slate-800 py-1 dark:hover:text-slate-300"
         >
           샘플 데이터로 보기
         </button>

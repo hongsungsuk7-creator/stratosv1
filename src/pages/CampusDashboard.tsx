@@ -7,7 +7,8 @@ import { ClassAlertsAndRankings } from '../components/campus/ClassAlertsAndRanki
 import { StudentRiskTable } from '../components/campus/StudentRiskTable';
 import { ClassAnalysisCharts } from '../components/campus/ClassAnalysisCharts';
 import { CampusDistribution } from '../components/campus/CampusDistribution';
-import { CLASSES_DATA } from '../data/campusMockData';
+import { DashboardCollapsibleSection } from '../components/dashboard/DashboardCollapsibleSection';
+import { CLASSES_DATA, STUDENTS_DATA } from '../data/campusMockData';
 import { UserGroup } from '../types';
 
 interface CampusDashboardProps {
@@ -33,6 +34,10 @@ export function CampusDashboard({ userGroup: _userGroup }: CampusDashboardProps)
       setIsStudentView(false);
     }
   };
+
+  const classRankingCount = isStudentView
+    ? STUDENTS_DATA.filter((s) => selectedClass === 'all' || s.classId === selectedClass).length
+    : CLASSES_DATA.filter((c) => selectedLevel === 'all' || c.level === selectedLevel).length;
 
   return (
     <div className="space-y-6">
@@ -64,34 +69,55 @@ export function CampusDashboard({ userGroup: _userGroup }: CampusDashboardProps)
         subjectOptions={subjectOptions}
       />
 
-      {/* STRATOS KPI Overview */}
-      <CampusKPIOverview />
+      <DashboardCollapsibleSection title="요약">
+        <CampusKPIOverview omitOuterCard />
+      </DashboardCollapsibleSection>
 
-      {/* Performance Matrix */}
-      <CampusPerformanceMatrix />
+      <DashboardCollapsibleSection
+        title="Performance Matrix"
+        titleAccessory={
+          <span className="shrink-0 pl-3 text-sm font-normal text-slate-500 sm:pl-5 dark:text-slate-400">
+            학급별 성과 분석 (전국 평균 대비)
+          </span>
+        }
+      >
+        <CampusPerformanceMatrix />
+      </DashboardCollapsibleSection>
 
-      {/* Course Analysis Charts */}
-      <ClassAnalysisCharts 
-        testType={testType}
-        selectedYear={selectedYear}
-        selectedMonth={selectedMonth}
-      />
+      <DashboardCollapsibleSection title="과정별·학급별 분석">
+        <ClassAnalysisCharts 
+          testType={testType}
+          selectedYear={selectedYear}
+          selectedMonth={selectedMonth}
+        />
+      </DashboardCollapsibleSection>
 
-      {/* Distribution and Averages */}
-      <CampusDistribution />
+      <DashboardCollapsibleSection title="순위 분포 및 과목 평균">
+        <CampusDistribution />
+      </DashboardCollapsibleSection>
 
-      {/* Alerts & Rankings */}
-      <div className="grid grid-cols-1 items-stretch gap-6 xl:grid-cols-2">
-        <ClassAlertsAndRankings />
-        <StudentRiskTable />
-      </div>
+      <DashboardCollapsibleSection title="학급 Top / Bottom Ranking 및 학생 리스크">
+        <div className="grid grid-cols-1 items-stretch gap-6 xl:grid-cols-2">
+          <ClassAlertsAndRankings />
+          <StudentRiskTable />
+        </div>
+      </DashboardCollapsibleSection>
 
-      {/* Class Ranking Table */}
-      <CampusClassRankingTable 
-        selectedLevel={selectedLevel}
-        selectedClass={selectedClass}
-        isStudentView={isStudentView}
-      />
+      <DashboardCollapsibleSection
+        title={isStudentView ? '학생별 성취도 상세' : '캠퍼스 학급별 랭킹'}
+        contentClassName="px-3 pb-3 pt-0"
+        titleAccessory={
+          <span className="shrink-0 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-normal text-slate-500 dark:bg-slate-700 dark:text-slate-400">
+            {classRankingCount}개 {isStudentView ? '학생' : '학급'}
+          </span>
+        }
+      >
+        <CampusClassRankingTable 
+          selectedLevel={selectedLevel}
+          selectedClass={selectedClass}
+          isStudentView={isStudentView}
+        />
+      </DashboardCollapsibleSection>
 
       {/* Footer Info */}
       <div className="pt-8 pb-4 text-center border-t border-slate-200 dark:border-slate-800">

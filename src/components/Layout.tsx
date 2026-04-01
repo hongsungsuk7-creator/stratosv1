@@ -17,8 +17,10 @@ export function Layout({ children, activeTab, setActiveTab, openTabs, closeTab, 
 
   return (
     <div className={`flex h-screen bg-slate-50 text-slate-900 font-sans ${isDarkMode ? 'dark' : ''}`}>
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="relative z-30 shrink-0 h-full min-h-0">
+        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      </div>
+      <div className="relative z-10 flex min-w-0 flex-1 flex-col overflow-hidden">
         <Header isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
         
         {/* Tab Bar */}

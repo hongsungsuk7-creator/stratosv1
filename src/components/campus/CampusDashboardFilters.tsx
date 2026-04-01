@@ -109,8 +109,8 @@ export function CampusDashboardFilters({
     : classes.filter(c => c.level === selectedLevel);
 
   return (
-    <div className="sticky top-0 z-[120] isolate">
-      <div className="pointer-events-none absolute -inset-x-4 inset-y-0 bg-white dark:bg-slate-900" />
+    <div className="sticky -top-1 z-[120] isolate">
+      <div className="pointer-events-none absolute -inset-x-4 -top-4 inset-y-0 bg-white dark:bg-slate-900" />
       <div className="relative p-4 rounded-xl border border-slate-200 shadow-lg mb-6 transition-all duration-300 bg-white dark:border-[3px] dark:border-slate-50 dark:bg-slate-800">
       <div className={`flex items-center justify-between ${isExpanded ? 'mb-4' : ''}`}>
         <div className="flex items-center gap-4">

@@ -72,11 +72,7 @@ export function StratosKPIOverview() {
   const emiLCount = filteredData.filter(item => item.emiGrade === 'L').length;
 
   return (
-    <div className="bg-white dark:bg-[#0f172a] text-slate-800 dark:text-white p-6 rounded-2xl shadow-sm dark:shadow-2xl border border-slate-200 dark:border-slate-800 relative overflow-hidden transition-colors duration-200">
-      {/* Background glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-gradient-to-b from-indigo-500/5 dark:from-indigo-500/10 to-transparent pointer-events-none" />
-      
-      <div className="relative z-10">
+    <div className="relative text-slate-800 dark:text-white">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 w-full">
           {/* Left Filter Area */}
           <div className="flex items-center gap-2">
@@ -269,7 +265,6 @@ export function StratosKPIOverview() {
             </div>
           </div>
         </div>
-      </div>
     </div>
   );
 }

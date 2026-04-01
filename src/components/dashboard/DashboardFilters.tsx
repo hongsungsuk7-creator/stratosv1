@@ -337,20 +337,7 @@ export function DashboardFilters({
           )}
         </div>
 
-        {/* 6. 컬럼 조회 선택 (Combo) */}
-        <div className="relative">
-          <label className="block text-[11px] font-medium text-slate-500 mb-1 dark:text-slate-400">컬럼 조회 선택</label>
-          <div className="relative">
-            <select className={UI_FILTER_CONTROL_COMPACT_SLATE_CLASS}>
-              <option>기본 조회 (P, Z, CV)</option>
-              <option>상세 조회 (파라미터)</option>
-              <option>리스크 중심 (CI, 등급)</option>
-            </select>
-            <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none dark:text-slate-500" />
-          </div>
-        </div>
-
-        {/* 7. 캠퍼스 선택 (Multi-select) */}
+        {/* 6. 캠퍼스 선택 (Multi-select) */}
         <div className="relative">
           <label className="block text-[11px] font-medium text-slate-500 mb-1 dark:text-slate-400">캠퍼스 선택</label>
           <div 
@@ -415,6 +402,19 @@ export function DashboardFilters({
               </div>
             </>
           )}
+        </div>
+
+        {/* 7. 컬럼 조회 선택 (Combo) */}
+        <div className="relative">
+          <label className="block text-[11px] font-medium text-slate-500 mb-1 dark:text-slate-400">컬럼 조회 선택</label>
+          <div className="relative">
+            <select className={UI_FILTER_CONTROL_COMPACT_SLATE_CLASS}>
+              <option>기본 조회 (P, Z, CV)</option>
+              <option>상세 조회 (파라미터)</option>
+              <option>리스크 중심 (CI, 등급)</option>
+            </select>
+            <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none dark:text-slate-500" />
+          </div>
         </div>
 
         {/* 8. 분석대상 조건 (Checkbox) */}
