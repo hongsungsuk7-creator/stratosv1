@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from
 import { createPortal } from 'react-dom';
 import { Filter, Search, ChevronDown, ChevronUp } from 'lucide-react';
 import { UI_FILTER_CONTROL_COMPACT_CLASS } from '../../constants/uiClasses';
-import { LEVELS } from '../../data/campusMockData';
+import { LEVELS, type PrincipalManagedCampus } from '../../data/campusMockData';
 
 interface CampusDashboardFiltersProps {
   selectedLevel: string;
@@ -22,6 +22,9 @@ interface CampusDashboardFiltersProps {
   selectedSubjects: string[];
   setSelectedSubjects: (subjects: string[]) => void;
   subjectOptions: string[];
+  managedCampuses: PrincipalManagedCampus[];
+  selectedManagedCampusId: string;
+  setSelectedManagedCampusId: (id: string) => void;
 }
 
 export function CampusDashboardFilters({
@@ -42,6 +45,9 @@ export function CampusDashboardFilters({
   selectedSubjects,
   setSelectedSubjects,
   subjectOptions,
+  managedCampuses,
+  selectedManagedCampusId,
+  setSelectedManagedCampusId,
 }: CampusDashboardFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isSubjectDropdownOpen, setIsSubjectDropdownOpen] = useState(false);
@@ -108,6 +114,11 @@ export function CampusDashboardFilters({
     ? classes 
     : classes.filter(c => c.level === selectedLevel);
 
+  const activeCampusLabel =
+    managedCampuses.find((c) => c.id === selectedManagedCampusId)?.label ??
+    managedCampuses[0]?.label ??
+    '';
+
   return (
     <div className="sticky -top-1 z-[120] isolate">
       <div className="pointer-events-none absolute -inset-x-4 -top-4 inset-y-0 bg-white dark:bg-slate-900" />
@@ -128,7 +139,7 @@ export function CampusDashboardFilters({
           </button>
           <div className="flex items-center space-x-2 px-3 py-1 bg-slate-100 dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600">
             <Filter className="w-3.5 h-3.5 text-slate-500" />
-            <span className="text-xs font-bold text-slate-700 dark:text-white">폴리어학원(분당)</span>
+            <span className="text-xs font-bold text-slate-700 dark:text-white">{activeCampusLabel}</span>
           </div>
         </div>
         <button 
@@ -141,7 +152,7 @@ export function CampusDashboardFilters({
       </div>
       
       {isExpanded && (
-        <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-4">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-8">
           {/* 1. 시험 연도 */}
           <div>
             <label className="block text-[11px] font-bold text-slate-500 mb-1 dark:text-white uppercase tracking-wider">시험 연도</label>
@@ -350,7 +361,30 @@ export function CampusDashboardFilters({
               )}
           </div>
 
-          {/* 8. 분석대상 조건 */}
+          {/* 8. 캠퍼스 선택 (원장 관리 캠퍼스만 표시) */}
+          {managedCampuses.length > 0 && (
+            <div>
+              <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-white">
+                캠퍼스 선택
+              </label>
+              <div className="relative">
+                <select
+                  value={selectedManagedCampusId}
+                  onChange={(e) => setSelectedManagedCampusId(e.target.value)}
+                  className={UI_FILTER_CONTROL_COMPACT_CLASS}
+                >
+                  {managedCampuses.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.label}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 transform text-slate-400 dark:text-slate-500" />
+              </div>
+            </div>
+          )}
+
+          {/* 9. 분석대상 조건 */}
           {setIncludeUnder10 !== undefined && (
             <div>
               <label className="block text-[11px] font-bold text-slate-500 mb-1 dark:text-white uppercase tracking-wider">분석대상 조건</label>

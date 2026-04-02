@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { CampusDashboardFilters } from '../components/campus/CampusDashboardFilters';
 import { PScoreAnalysis } from '../components/pscore/PScoreAnalysis';
-import { CLASSES_DATA } from '../data/campusMockData';
+import { CLASSES_DATA, PRINCIPAL_MANAGED_CAMPUSES } from '../data/campusMockData';
 import { UserGroup } from '../types';
 
 interface CampusPScoreProps {
@@ -17,8 +17,19 @@ export function CampusPScore({ userGroup: _userGroup }: CampusPScoreProps) {
   const [includeUnder10, setIncludeUnder10] = useState(false);
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [selectedSubjects, setSelectedSubjects] = useState(['English', 'Speech Building', 'Eng. Foundations']);
+  const [selectedManagedCampusId, setSelectedManagedCampusId] = useState(
+    () => PRINCIPAL_MANAGED_CAMPUSES[0]?.id ?? '',
+  );
 
   const subjectOptions = ['English', 'Speech Building', 'Eng. Foundations', 'Cultural Conn.'];
+
+  useEffect(() => {
+    const first = PRINCIPAL_MANAGED_CAMPUSES[0];
+    if (!first) return;
+    if (!PRINCIPAL_MANAGED_CAMPUSES.some((c) => c.id === selectedManagedCampusId)) {
+      setSelectedManagedCampusId(first.id);
+    }
+  }, [selectedManagedCampusId]);
 
   const handleSearch = () => {
     setShowAnalysis(true);
@@ -52,6 +63,9 @@ export function CampusPScore({ userGroup: _userGroup }: CampusPScoreProps) {
         selectedSubjects={selectedSubjects}
         setSelectedSubjects={setSelectedSubjects}
         subjectOptions={subjectOptions}
+        managedCampuses={PRINCIPAL_MANAGED_CAMPUSES}
+        selectedManagedCampusId={selectedManagedCampusId}
+        setSelectedManagedCampusId={setSelectedManagedCampusId}
       />
 
       {/* Content Area */}

@@ -70,6 +70,14 @@ export const CAMPUS_DATA = {
   sGradeRatio: 15.8
 };
 
+/** 원장이 관리하는 캠퍼스(데모). 1개만 넣으면 선택 UI에도 1개만 표시됩니다. */
+export type PrincipalManagedCampus = { id: string; label: string };
+
+export const PRINCIPAL_MANAGED_CAMPUSES: PrincipalManagedCampus[] = [
+  { id: 'bundang', label: '폴리어학원(분당)' },
+  { id: 'wiryae', label: '폴리어학원(위례)' },
+];
+
 /** 캠퍼스 대시보드 레벨 필터 — 커리큘럼 레벨 코드 (GT / MGT / S / R / MAG) */
 export const LEVELS = [
   'GT1', 'GT2', 'GT3', 'GT4',

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { CampusDashboardFilters } from '../components/campus/CampusDashboardFilters';
 import { CampusKPIOverview } from '../components/campus/CampusKPIOverview';
 import { CampusPerformanceMatrix } from '../components/campus/CampusPerformanceMatrix';
@@ -8,7 +8,7 @@ import { StudentRiskTable } from '../components/campus/StudentRiskTable';
 import { ClassAnalysisCharts } from '../components/campus/ClassAnalysisCharts';
 import { CampusDistribution } from '../components/campus/CampusDistribution';
 import { DashboardCollapsibleSection } from '../components/dashboard/DashboardCollapsibleSection';
-import { CLASSES_DATA, STUDENTS_DATA } from '../data/campusMockData';
+import { CLASSES_DATA, PRINCIPAL_MANAGED_CAMPUSES, STUDENTS_DATA } from '../data/campusMockData';
 import { UserGroup } from '../types';
 
 interface CampusDashboardProps {
@@ -24,8 +24,19 @@ export function CampusDashboard({ userGroup: _userGroup }: CampusDashboardProps)
   const [selectedMonth, setSelectedMonth] = useState(12);
   const [includeUnder10, setIncludeUnder10] = useState(false);
   const [selectedSubjects, setSelectedSubjects] = useState(['English', 'Speech Building', 'Eng. Foundations']);
+  const [selectedManagedCampusId, setSelectedManagedCampusId] = useState(
+    () => PRINCIPAL_MANAGED_CAMPUSES[0]?.id ?? '',
+  );
 
   const subjectOptions = ['English', 'Speech Building', 'Eng. Foundations', 'Cultural Conn.'];
+
+  useEffect(() => {
+    const first = PRINCIPAL_MANAGED_CAMPUSES[0];
+    if (!first) return;
+    if (!PRINCIPAL_MANAGED_CAMPUSES.some((c) => c.id === selectedManagedCampusId)) {
+      setSelectedManagedCampusId(first.id);
+    }
+  }, [selectedManagedCampusId]);
 
   const handleSearch = () => {
     if (selectedClass !== 'all') {
@@ -67,6 +78,9 @@ export function CampusDashboard({ userGroup: _userGroup }: CampusDashboardProps)
         selectedSubjects={selectedSubjects}
         setSelectedSubjects={setSelectedSubjects}
         subjectOptions={subjectOptions}
+        managedCampuses={PRINCIPAL_MANAGED_CAMPUSES}
+        selectedManagedCampusId={selectedManagedCampusId}
+        setSelectedManagedCampusId={setSelectedManagedCampusId}
       />
 
       <DashboardCollapsibleSection title="요약">
