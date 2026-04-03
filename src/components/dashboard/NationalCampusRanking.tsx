@@ -90,6 +90,7 @@ export function NationalCampusRanking({
   omitTitleHeading = false,
   omitOuterCard = false,
   hideExamCohortBadge = false,
+  enableTableScroll = false,
 }: { 
   title?: string, 
   showOnlyPScore?: boolean,
@@ -106,7 +107,10 @@ export function NationalCampusRanking({
   omitOuterCard?: boolean,
   /** 응시 N개 캠퍼스 배지를 상위 섹션으로 옮길 때 카드 내부 배지 숨김 */
   hideExamCohortBadge?: boolean,
+  /** 카드 안에서 표 영역만 세로 스크롤(높이 제한) */
+  enableTableScroll?: boolean,
 }) {
+  const scrollableTable = omitOuterCard || enableTableScroll;
   const { campusRankingData } = useExcelData();
   const normalizeCampusName = (name: string) =>
     name.replace('폴리어학원(', '').replace(')', '').trim();
@@ -401,7 +405,7 @@ export function NationalCampusRanking({
 
       <div
         className={
-          omitOuterCard
+          scrollableTable
             ? 'max-h-[min(520px,65vh)] overflow-auto'
             : 'overflow-x-auto'
         }
@@ -409,7 +413,7 @@ export function NationalCampusRanking({
         <table className="w-full text-left text-sm">
           <thead
             className={`text-xs uppercase text-slate-700 dark:text-slate-300 ${
-              omitOuterCard
+              scrollableTable
                 ? 'sticky top-0 z-20 border-b border-slate-200 bg-slate-50 shadow-sm dark:border-slate-700 dark:bg-slate-800'
                 : 'border-b border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/50'
             }`}

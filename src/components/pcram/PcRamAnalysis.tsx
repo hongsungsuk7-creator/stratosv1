@@ -904,9 +904,9 @@ export function PcRamAnalysis({
           </div>
         </div>
         
-        <div className="overflow-x-auto">
+        <div className="max-h-[min(520px,65vh)] overflow-auto">
           <table className="w-full text-sm text-center whitespace-nowrap">
-            <thead className="text-xs text-slate-500 bg-slate-50 dark:bg-slate-900/50 dark:text-slate-400">
+            <thead className="sticky top-0 z-10 text-xs text-slate-500 bg-slate-50 shadow-sm dark:bg-slate-900/50 dark:text-slate-400">
               <tr>
                 <th className="px-2 py-2 font-medium border-b border-slate-200 dark:border-slate-700" rowSpan={2}>
                   <SortButton criteria="rank" label="순위" />

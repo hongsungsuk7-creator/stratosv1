@@ -706,6 +706,7 @@ export function PScoreAnalysis({
         selectedCampuses={showAllCampuses ? [] : selectedCampuses}
         selectedYear={selectedYear}
         selectedTests={selectedTests}
+        enableTableScroll
       />
 
     </div>
