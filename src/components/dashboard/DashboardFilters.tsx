@@ -23,6 +23,9 @@ interface DashboardFiltersProps {
   subjectOptions: string[];
   courseOptions: string[];
   campusOptions: string[];
+  /** HQ Dashboard 등: 캠퍼스명 일부 입력으로 랭킹 등에서 필터 */
+  campusLookup?: string;
+  setCampusLookup?: (val: string) => void;
   onSearch?: () => void;
   yearOptions?: number[];
 }
@@ -47,6 +50,8 @@ export function DashboardFilters({
   subjectOptions,
   courseOptions,
   campusOptions,
+  campusLookup,
+  setCampusLookup,
   onSearch,
   yearOptions = [2026, 2025, 2024, 2023],
 }: DashboardFiltersProps) {
@@ -55,6 +60,7 @@ export function DashboardFilters({
   const [isSubjectDropdownOpen, setIsSubjectDropdownOpen] = useState(false);
   const [isTestDropdownOpen, setIsTestDropdownOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
+  const hasCampusLookup = campusLookup !== undefined && setCampusLookup !== undefined;
 
   return (
     <div className="sticky -top-1 z-[120] isolate">
@@ -85,7 +91,9 @@ export function DashboardFilters({
       </div>
       
       {isExpanded && (
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-8">
+        <div
+          className={`grid grid-cols-2 gap-3 md:grid-cols-4 ${hasCampusLookup ? 'xl:grid-cols-9' : 'xl:grid-cols-8'}`}
+        >
           {/* 1. 시험 연도 (Combo) */}
         <div className="relative">
           <label className="block text-[11px] font-medium text-slate-500 mb-1 dark:text-slate-400">시험 연도</label>
@@ -337,7 +345,22 @@ export function DashboardFilters({
           )}
         </div>
 
-        {/* 6. 캠퍼스 선택 (Multi-select) */}
+        {/* 6. 캠퍼스 조회 (텍스트, Dashboard 전용) */}
+        {hasCampusLookup && (
+          <div>
+            <label className="block text-[11px] font-medium text-slate-500 mb-1 dark:text-slate-400">캠퍼스 조회</label>
+            <input
+              type="text"
+              value={campusLookup}
+              onChange={(e) => setCampusLookup(e.target.value)}
+              placeholder={userGroup === 'GROUP_HQ' ? '캠퍼스명 일부 입력' : '본사 전용'}
+              disabled={userGroup !== 'GROUP_HQ'}
+              className={`${UI_FILTER_CONTROL_COMPACT_SLATE_CLASS} pr-2 placeholder:text-slate-400 dark:placeholder:text-slate-500 ${userGroup !== 'GROUP_HQ' ? 'opacity-50 cursor-not-allowed' : ''}`}
+            />
+          </div>
+        )}
+
+        {/* 7. 캠퍼스 선택 (Multi-select) */}
         <div className="relative">
           <label className="block text-[11px] font-medium text-slate-500 mb-1 dark:text-slate-400">캠퍼스 선택</label>
           <div 
@@ -404,7 +427,7 @@ export function DashboardFilters({
           )}
         </div>
 
-        {/* 7. 컬럼 조회 선택 (Combo) */}
+        {/* 8. 컬럼 조회 선택 (Combo) */}
         <div className="relative">
           <label className="block text-[11px] font-medium text-slate-500 mb-1 dark:text-slate-400">컬럼 조회 선택</label>
           <div className="relative">
@@ -417,7 +440,7 @@ export function DashboardFilters({
           </div>
         </div>
 
-        {/* 8. 분석대상 조건 (Checkbox) */}
+        {/* 9. 분석대상 조건 (Checkbox) */}
         <div>
           <label className="block text-[11px] font-medium text-slate-500 mb-1 dark:text-slate-400">분석대상 조건</label>
           <div className="flex items-center h-8 px-1">

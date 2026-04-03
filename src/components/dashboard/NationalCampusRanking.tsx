@@ -326,7 +326,7 @@ export function NationalCampusRanking({
     if (rowEl) {
       rowEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-  }, [normalizedHighlightedCampus, sortCriteria, sortDirection, filterType, selectedCampuses, selectedYear, selectedTests]);
+  }, [normalizedHighlightedCampus, sortCriteria, sortDirection, filterType, filterCampusName, selectedCampuses, selectedYear, selectedTests]);
 
   return (
     <div

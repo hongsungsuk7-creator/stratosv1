@@ -39,6 +39,7 @@ export function Dashboard({ userGroup }: { userGroup: UserGroup }) {
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>(['Eng. Foundations', 'English', 'Speech Building']);
   const [selectedTests, setSelectedTests] = useState<string[]>(['December 2025 Monthly Test (ELE) (12월)']);
   const [matrixSelectedCampusName, setMatrixSelectedCampusName] = useState('');
+  const [campusLookup, setCampusLookup] = useState('');
 
   const testOptions = useMemo(() => {
     const fromStore = savedDatasets.map((d) => d.examLabel);
@@ -112,7 +113,7 @@ export function Dashboard({ userGroup }: { userGroup: UserGroup }) {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Dashboard</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">전국 캠퍼스의 핵심 지표와 운영 현황을 한눈에 모니터링하는 통합 대시보드입니다.</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">전국 캠퍼스의 핵심 지표와 운영 현황을 한눈에 모니터링하는 본사 교육사업본부용 통합 대시보드입니다.</p>
         </div>
       </div>
 
@@ -137,6 +138,8 @@ export function Dashboard({ userGroup }: { userGroup: UserGroup }) {
         subjectOptions={subjectOptions}
         courseOptions={courseOptions}
         campusOptions={campusOptions}
+        campusLookup={campusLookup}
+        setCampusLookup={setCampusLookup}
         onSearch={handleSearch}
       />
 
@@ -177,6 +180,9 @@ export function Dashboard({ userGroup }: { userGroup: UserGroup }) {
           highlightedCampusName={matrixSelectedCampusName}
           selectedYear={selectedYear}
           selectedTests={selectedTests}
+          selectedSubjects={selectedSubjects}
+          selectedCampuses={selectedCampuses}
+          filterCampusName={campusLookup.trim() || undefined}
           omitTitleHeading
           omitOuterCard
           hideExamCohortBadge

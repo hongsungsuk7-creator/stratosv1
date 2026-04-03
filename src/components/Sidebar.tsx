@@ -17,7 +17,7 @@ export function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
     'HQ Management System': true,
-    'Research System': true,
+    'Research System': false,
     'Campus Teaching System': true,
   });
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({

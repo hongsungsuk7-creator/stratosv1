@@ -55,7 +55,7 @@ export function CampusDashboard({ userGroup: _userGroup }: CampusDashboardProps)
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Campus Dashboard</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">캠퍼스의 핵심 지표와 반별/학생별 성취도를 한눈에 모니터링하는 통합 대시보드입니다.</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">캠퍼스의 핵심 지표와 반별/학생별 성취도를 한눈에 모니터링하는 캠퍼스용 통합 대시보드입니다.</p>
         </div>
       </div>
 
