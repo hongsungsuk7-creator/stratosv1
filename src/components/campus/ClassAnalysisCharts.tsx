@@ -151,6 +151,9 @@ export function ClassAnalysisCharts({
                   if (active && payload && payload.length) {
                     const data = payload[0].payload;
                     const bgColor = data.emiGrade === 'G' ? '#10b981' : '#ef4444';
+                    const ratio = Number(data.excellentRatio);
+                    const total = Number(data.studentCount);
+                    const edNe1Count = Math.round((total * ratio) / 100);
                     return (
                       <div className="bg-slate-800 p-3 rounded-lg shadow-md border border-slate-700 text-white">
                         <div className="mb-2 flex items-center">
@@ -161,8 +164,10 @@ export function ClassAnalysisCharts({
                           <div className="text-[13px] text-slate-300">
                             난이도 (Z-Score 기반) {Number(data.zScore).toFixed(2)}
                           </div>
-                          <div className="text-[13px] text-slate-300">우수비율: {data.excellentRatio}%</div>
-                          <div className="text-[13px] text-slate-300">학생수: {data.studentCount}명</div>
+                          <div className="text-[13px] text-slate-300">
+                            우수비율(ED, NE1) : {ratio}%&nbsp;&nbsp;({edNe1Count}명)
+                          </div>
+                          <div className="text-[13px] text-slate-300">학급 인원: {total}명</div>
                         </div>
                       </div>
                     );
