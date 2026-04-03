@@ -71,10 +71,36 @@ export function CourseAnalysisCharts({ testType, selectedYear: _selectedYear, se
         </h3>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={dynamicTrendData}>
+            <LineChart data={dynamicTrendData} margin={{ top: 8, right: 12, left: 22, bottom: 28 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" className="dark:stroke-slate-700"/>
-              <XAxis dataKey="session" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748b'}}/>
-              <YAxis domain={[60, 100]} axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748b'}}/>
+              <XAxis
+                dataKey="session"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 12, fill: '#64748b' }}
+                label={{
+                  value: '시험 월·유형',
+                  position: 'insideBottom',
+                  offset: -4,
+                  fontSize: 11,
+                  fill: '#64748b',
+                }}
+              />
+              <YAxis
+                domain={[60, 100]}
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 12, fill: '#64748b' }}
+                label={{
+                  value: '평균 정답률 (%)',
+                  angle: -90,
+                  position: 'insideLeft',
+                  offset: 10,
+                  style: { textAnchor: 'middle' },
+                  fontSize: 11,
+                  fill: '#64748b',
+                }}
+              />
               <Tooltip contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}}/>
               <Legend iconType="circle" wrapperStyle={{fontSize: '12px'}}/>
               <Line type="monotone" dataKey="LX A" stroke="#4f46e5" strokeWidth={2} dot={{r: 4}} activeDot={{r: 6}}/>
@@ -91,10 +117,43 @@ export function CourseAnalysisCharts({ testType, selectedYear: _selectedYear, se
         </h3>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <ScatterChart margin={{ top: 10, right: 20, bottom: 10, left: -20 }}>
+            <ScatterChart margin={{ top: 12, right: 20, bottom: 36, left: 16 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" className="dark:stroke-slate-700"/>
-              <XAxis type="number" dataKey="difficulty" name="Z-Score (조정)" domain={[2, 4]} axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748b'}} label={{ value: '난이도 (Z-Score 기반)', position: 'insideBottomRight', offset: -5, fontSize: 10, fill: '#94a3b8' }}/>
-              <YAxis type="number" dataKey="score" name="우수비율" domain={[30, 100]} axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748b'}}/>
+              <XAxis
+                type="number"
+                dataKey="difficulty"
+                name="난이도(Z-Score)"
+                domain={[2, 4]}
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 12, fill: '#64748b' }}
+                tickFormatter={(v: number) => v.toFixed(2)}
+                label={{
+                  value: '난이도 (Z-Score)',
+                  position: 'insideBottom',
+                  offset: -4,
+                  fontSize: 11,
+                  fill: '#64748b',
+                }}
+              />
+              <YAxis
+                type="number"
+                dataKey="score"
+                name="우수비율"
+                domain={[30, 100]}
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 12, fill: '#64748b' }}
+                label={{
+                  value: '우수학생 비율 (%)',
+                  angle: -90,
+                  position: 'insideLeft',
+                  offset: 4,
+                  style: { textAnchor: 'middle' },
+                  fontSize: 11,
+                  fill: '#64748b',
+                }}
+              />
               <ZAxis type="number" dataKey="size" range={[50, 400]} name="학생수" />
               <Tooltip 
                 cursor={{strokeDasharray: '3 3'}} 
@@ -107,6 +166,13 @@ export function CourseAnalysisCharts({ testType, selectedYear: _selectedYear, se
                       ? `(${campusInfo.type}ㆍ${campusInfo.region})` 
                       : '';
                     const bgColor = data.emiGrade === 'G' ? '#10b981' : '#ef4444';
+                    const scoreNum = typeof data.score === 'number' ? data.score : Number(data.score);
+                    const ratioStr =
+                      Number.isFinite(scoreNum) && Math.abs(scoreNum - Math.round(scoreNum)) < 1e-6
+                        ? String(Math.round(scoreNum))
+                        : Number.isFinite(scoreNum)
+                          ? scoreNum.toFixed(1)
+                          : String(data.score);
 
                     return (
                       <div className="bg-slate-800 p-3 rounded-lg shadow-md border border-slate-700 text-white">
@@ -117,10 +183,10 @@ export function CourseAnalysisCharts({ testType, selectedYear: _selectedYear, se
                         </div>
                         <div className="flex flex-col gap-1">
                           <div className="text-[13px] text-slate-300">
-                            난이도 (Z-Score 기반): {typeof data.difficulty === 'number' ? data.difficulty.toFixed(2) : data.difficulty}
+                            난이도 (Z-Score 기반) {typeof data.difficulty === 'number' ? data.difficulty.toFixed(2) : data.difficulty}
                           </div>
                           <div className="text-[13px] text-slate-300">
-                            우수비율: {typeof data.score === 'number' ? data.score.toFixed(1) : data.score}%
+                            우수비율(ED, NE1) : {ratioStr}%
                           </div>
                           <div className="text-[13px] text-slate-300">
                             학생수: {data.size / 10}명
