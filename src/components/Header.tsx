@@ -13,10 +13,10 @@ export function Header({ isDarkMode, setIsDarkMode }: HeaderProps) {
   return (
     <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 min-h-12 flex flex-wrap items-center justify-between gap-2 py-1.5 px-6 transition-colors duration-200">
       <div className="flex items-center gap-2 min-w-0 flex-1 text-xs text-slate-600 dark:text-slate-300">
-        <FileSpreadsheet className="w-3.5 h-3.5 shrink-0 text-indigo-500" />
-        {isSampleMode ? (
-          <span className="text-slate-400 dark:text-slate-500">활성 데이터: 내장 샘플 (사이드바에서 시험 자료를 등록하세요)</span>
-        ) : activeDataset ? (
+        {(!isSampleMode && activeDataset) || parseError ? (
+          <FileSpreadsheet className="w-3.5 h-3.5 shrink-0 text-indigo-500" />
+        ) : null}
+        {!isSampleMode && activeDataset ? (
           <span className="truncate" title={`${activeDataset.examLabel} · ${activeDataset.fileName}`}>
             <span className="mr-1.5 text-[10px] font-semibold px-1 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
               {activeDataset.datasetKind === 'RESEARCH_ITEM' ? 'RS' : '3P'}
