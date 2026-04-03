@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   LayoutDashboard, BarChart3, AlertTriangle, ShieldCheck, Database,
   Microscope, FileText, Target, Sliders, Archive,
-  Users, ChevronLeft, ChevronRight, ChevronDown,
+  ChevronLeft, ChevronRight, ChevronDown,
   Settings, PlayCircle
 } from 'lucide-react';
 import { TutorialModal } from './TutorialModal';
@@ -58,7 +58,6 @@ export function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
         { id: 'campus-pscore', label: 'P-Score', icon: BarChart3 },
         { id: 'campus-pcram', label: 'PC-RAM', icon: AlertTriangle },
         { id: 'campus-peqm', label: 'PEQM', icon: ShieldCheck },
-        { id: 'class-analysis', label: 'Class Analysis', icon: Users },
       ]
     },
     {
