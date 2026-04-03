@@ -8,7 +8,6 @@ import {
   CLASS_SIZE_DATA, OPERATION_PERIOD_DATA, PCRAM_RANKING_DATA, MATRIX_DATA
 } from '../../data/pcramMockData';
 import { calculateCI, calculatePScore, calculateZScore, getRiskLevel } from '@/core';
-import { CAMPUS_INFO } from '../../constants';
 import { PCRAM_CAMPUS_2025_MT_DATA } from '@/data/pcramCampus2025MtData';
 import { parseExamOptionLabel, toExamPeriodKey } from '@/utils/examPeriod';
 
@@ -94,7 +93,13 @@ const AnalysisSection = ({ title, data, showChart = true, sideBySide = false, di
                     <thead className="text-xs text-slate-500 bg-slate-50 dark:bg-slate-900/50 dark:text-slate-400 uppercase">
                       <tr>
                         <th className="px-1.5 py-1 font-medium rounded-tl-md border-b border-slate-200 dark:border-slate-700" rowSpan={2}>
-                          {title.includes('선택 캠퍼스') ? '운영' : title.replace(/^\d+\.\s*/, '').replace(' 기준', '')}
+                          {title.includes('전체/직영/분원') || title.includes('선택 캠퍼스')
+                            ? '운영'
+                            : title.includes('지역권역')
+                              ? '구분'
+                              : title.includes('운영 기간 기준')
+                                ? '운영 기간'
+                                : title.replace(/^\d+\.\s*/, '').replace(' 기준', '')}
                         </th>
                         <th className="px-1.5 py-1 font-medium text-right border-b border-slate-200 dark:border-slate-700" rowSpan={2}>캠퍼스수</th>
                         <th className="px-1.5 py-1 font-medium text-right border-b border-slate-200 dark:border-slate-700" rowSpan={2}>학급수</th>
@@ -224,7 +229,6 @@ export function PcRamAnalysis({
 
   // TODO: 인증 사용자 정보가 연결되면 실제 로그인 캠퍼스로 치환
   const loginCampusKeyword = '분당';
-  const loginCampusLabel = '분당';
   const normalizeCampusName = (name: string) =>
     name.replace('폴리어학원(', '').replace(')', '').trim();
 
@@ -272,97 +276,28 @@ export function PcRamAnalysis({
   const rankingSource = periodRankingData.length > 0 ? periodRankingData : PCRAM_RANKING_DATA;
   const loginCampusRankingRow =
     rankingSource.find((row) => normalizeCampusName(row.name).includes(loginCampusKeyword)) ?? rankingSource[0];
-  const loginCampusInfo =
-    CAMPUS_INFO.find((row) => row.name.includes(`(${loginCampusKeyword})`)) ?? null;
-  const loginCampusRegion = loginCampusInfo?.region ?? loginCampusRankingRow.region;
 
-  const section1Data = [
-    TOTAL_OPERATION_TYPE_DATA[0],
-    {
-      ...TOTAL_OPERATION_TYPE_DATA[0],
-      group: loginCampusLabel,
-      campuses: 1,
-      classes: loginCampusRankingRow.classes,
-      students: loginCampusRankingRow.students,
-      avgPerClass: loginCampusRankingRow.avgPerClass,
-      zScore: loginCampusRankingRow.zScore,
-      ci: loginCampusRankingRow.ci,
-      ciGrade: loginCampusRankingRow.ci < 0.65 ? 'A+' : loginCampusRankingRow.ci < 0.8 ? 'B' : 'C',
-      finalGrade: loginCampusRankingRow.grade,
-      pScore: loginCampusRankingRow.pScore,
-      pScoreEng: loginCampusRankingRow.pScoreEng,
-      pScoreSpeech: loginCampusRankingRow.pScoreSpeech,
-      pScoreFound: loginCampusRankingRow.pScoreFound,
-      pScoreCult: loginCampusRankingRow.pScoreCult,
-      delta: 0,
-    },
+  const section1Data = TOTAL_OPERATION_TYPE_DATA;
+
+  const regionBenchmarkGroups = ['서울권', '경인권', '강원권', '충청권', '전라권'];
+  const section2Data = regionBenchmarkGroups
+    .map((g) => REGION_DATA.find((row) => row.group === g))
+    .filter((row): row is (typeof REGION_DATA)[number] => row != null);
+
+  const section3Data = STUDENT_SIZE_DATA;
+
+  const section4Data = CLASS_SIZE_DATA;
+
+  const operationPeriodSectionGroups = ['전체', '16년 이상', '11~15년', '6~10년', '3~5년'];
+  const section5Data = operationPeriodSectionGroups
+    .map((g) => OPERATION_PERIOD_DATA.find((row) => row.group === g))
+    .filter((row): row is (typeof OPERATION_PERIOD_DATA)[number] => row != null);
+
+  const section6Data = [
+    { type: '직영', r1: '8(53.3%)', r2: '4(26.7%)', r3: '2(13.3%)', r4: '1(6.7%)', total: '15(100%)' },
+    { type: '분원', r1: '12(28.6%)', r2: '18(42.9%)', r3: '8(19.0%)', r4: '4(9.5%)', total: '42(100%)' },
+    { type: '계', r1: '20(35.1%)', r2: '22(38.6%)', r3: '10(17.5%)', r4: '5(8.8%)', total: '57(100%)' },
   ];
-
-  const section2Data = [
-    REGION_DATA[0],
-    {
-      ...(REGION_DATA.find((row) => row.group === loginCampusRegion) ?? REGION_DATA[1] ?? REGION_DATA[0]),
-    },
-  ];
-
-  const studentSizeGroup = (() => {
-    const count = loginCampusRankingRow.students;
-    if (count >= 51) return '51명 이상 (XL)';
-    if (count >= 31) return '31 ~ 50명 (L)';
-    if (count >= 16) return '16 ~ 30명 (M)';
-    return '15명 이하 (S)';
-  })();
-
-  const classSizeGroup = (() => {
-    const classes = loginCampusRankingRow.classes;
-    if (classes >= 6) return '6학급 이상';
-    if (classes >= 4) return '4 ~ 5학급';
-    if (classes >= 2) return '2 ~ 3학급';
-    return '1학급';
-  })();
-
-  const operationPeriodGroup = (() => {
-    const years = loginCampusRankingRow.years;
-    if (years >= 16) return '16년 이상';
-    if (years >= 11) return '11~15년';
-    if (years >= 6) return '6~10년';
-    if (years >= 3) return '3~5년';
-    return '2년 이하';
-  })();
-
-  const section3Data = [
-    {
-      ...(STUDENT_SIZE_DATA.find((row) => row.group === studentSizeGroup) ?? STUDENT_SIZE_DATA[STUDENT_SIZE_DATA.length - 1]),
-      group: loginCampusLabel,
-    },
-  ];
-
-  const section4Data = [
-    {
-      ...(CLASS_SIZE_DATA.find((row) => row.group === classSizeGroup) ?? CLASS_SIZE_DATA[CLASS_SIZE_DATA.length - 1]),
-      group: loginCampusLabel,
-    },
-  ];
-
-  const section5Data = [
-    {
-      ...(OPERATION_PERIOD_DATA.find((row) => row.group === operationPeriodGroup) ?? OPERATION_PERIOD_DATA[OPERATION_PERIOD_DATA.length - 1]),
-      group: loginCampusLabel,
-    },
-  ];
-
-  const section6RankRow = (() => {
-    const rank = loginCampusRankingRow.rank;
-    const inRange = (from: number, to: number) => (rank >= from && rank <= to ? '1(100%)' : '0(0.0%)');
-    return {
-      type: loginCampusLabel,
-      r1: inRange(1, 10),
-      r2: inRange(11, 20),
-      r3: inRange(21, 30),
-      r4: inRange(31, 40),
-      total: '1(100%)',
-    };
-  })();
 
   const handleSortClick = (criteria: string) => {
     if (sortCriteria === criteria) {
@@ -490,7 +425,7 @@ export function PcRamAnalysis({
       </div>
 
       {/* Sections */}
-      <AnalysisSection title="1. 선택 캠퍼스 기준" data={section1Data} sideBySide={true} displaySubjects={displaySubjects} subjectMap={SUBJECT_MAP} />
+      <AnalysisSection title="1. 전체/직영/분원 기준" data={section1Data} sideBySide={true} displaySubjects={displaySubjects} subjectMap={SUBJECT_MAP} />
       <AnalysisSection title="2. 지역권역 기준" data={section2Data} sideBySide={true} displaySubjects={displaySubjects} subjectMap={SUBJECT_MAP} />
       <AnalysisSection title="3. 학생수 기준" data={section3Data} sideBySide={true} displaySubjects={displaySubjects} subjectMap={SUBJECT_MAP} />
       <AnalysisSection title="4. 학급수 기준" data={section4Data} sideBySide={true} displaySubjects={displaySubjects} subjectMap={SUBJECT_MAP} />
@@ -516,7 +451,7 @@ export function PcRamAnalysis({
                   </tr>
                 </thead>
                 <tbody>
-                  {[section6RankRow].map((row, idx) => (
+                  {section6Data.map((row, idx) => (
                     <tr 
                       key={idx} 
                       className="border-b border-slate-100 dark:border-slate-700/50 last:border-0"
@@ -875,7 +810,7 @@ export function PcRamAnalysis({
             <div className="space-y-4">
               <h4 className="font-bold text-slate-800 dark:text-white text-base">3. 차트 및 테이블 해설</h4>
               <div className="space-y-3 pl-2">
-                <p>📋 <strong>선택 캠퍼스 기준 (상세표):</strong> 직영 캠퍼스를 P-Score 내림차순으로 나열. 캠퍼스명, 운영주체, 지역, 운영기간, 학급수, 학생수, 급당평균, Z-Score, CI(Median), CI등급, 최종등급, 진단유형, 총평균(%), 과목별 정답률을 모두 표시. 등급별 행 배경 색상으로 직관적 구분.</p>
+                <p>📋 <strong>전체/직영/분원 기준 (상세표):</strong> 직영 캠퍼스를 P-Score 내림차순으로 나열. 캠퍼스명, 운영주체, 지역, 운영기간, 학급수, 학생수, 급당평균, Z-Score, CI(Median), CI등급, 최종등급, 진단유형, 총평균(%), 과목별 정답률을 모두 표시. 등급별 행 배경 색상으로 직관적 구분.</p>
                 <p>📊 <strong>벤치마크 기준표 5종:</strong> 동일 조건 캠퍼스끼리 공정한 비교를 제공합니다 (지역권역별, 학생수별, 학급수별, 운영기간별, 순위구간별). 각 테이블 옆에 ComposedChart(Bar=Z-Score, Line=CI) 차트가 페어링됩니다.</p>
                 <p>📋 <strong>순위구간별 지역권역 분포 (크로스탭):</strong> Z-Score 순위를 구간으로 분류하고 각 구간에서 지역권역 비중을 크로스탭 표시. 어느 지역이 상위/하위 구간에 집중되는지 파악.</p>
                 <p>🎯 <strong>과목별 전국 평균 정답률 (게이지):</strong> 전국 직영 캠퍼스의 과목별 평균 정답률을 반원형 게이지로 시각화. 과목 간 성취 격차를 한눈에 확인.</p>

@@ -35,6 +35,13 @@ const AnalysisSection = ({ title, data, showChart = true, isHorizontalChart: _is
   const [isOpen, setIsOpen] = useState(true);
 
   const chartTitle = `${title.replace(/^\d+\.\s*/, '')}별 P-SCORE / Balance CV`;
+  const rowLabelHeader = title.includes('운영 기간 기준')
+    ? '운영 기간'
+    : title.includes('학급수 기준')
+      ? '학급수'
+      : title.includes('학생수 기준')
+        ? '학생수'
+        : '구분';
 
   return (
     <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden mb-4">
@@ -56,7 +63,7 @@ const AnalysisSection = ({ title, data, showChart = true, isHorizontalChart: _is
                     <table className="w-full text-sm text-left">
                       <thead className="text-xs text-slate-500 bg-slate-50 dark:bg-slate-900/50 dark:text-slate-400 uppercase">
                         <tr>
-                          <th className="px-1.5 py-1 font-medium rounded-tl-md">구분</th>
+                          <th className="px-1.5 py-1 font-medium rounded-tl-md">{rowLabelHeader}</th>
                           <th className="px-1.5 py-1 font-medium text-right">캠퍼스수</th>
                           <th className="px-1.5 py-1 font-medium text-right">학급수</th>
                           <th className="px-1.5 py-1 font-medium text-right">학생수</th>
@@ -108,7 +115,7 @@ const AnalysisSection = ({ title, data, showChart = true, isHorizontalChart: _is
                 <table className="w-full text-sm text-left">
                   <thead className="text-xs text-slate-500 bg-slate-50 dark:bg-slate-900/50 dark:text-slate-400 uppercase">
                     <tr>
-                      <th className="px-1.5 py-1 font-medium rounded-tl-md">구분</th>
+                      <th className="px-1.5 py-1 font-medium rounded-tl-md">{rowLabelHeader}</th>
                       <th className="px-1.5 py-1 font-medium text-right">캠퍼스수</th>
                       <th className="px-1.5 py-1 font-medium text-right">학급수</th>
                       <th className="px-1.5 py-1 font-medium text-right">학생수</th>
@@ -219,37 +226,25 @@ export function PScoreAnalysis({
 
   const loginCampus = {
     name: "분당",
-    region: "서울권",
-    studentSizeGroup: "51명 이상 (XL)",
-    classSizeGroup: "6학급 이상",
-    operationPeriodGroup: "16년 이상",
-    rank: 12
   };
 
-  const section1Data = [
-    TOTAL_OPERATION_TYPE_DATA[0], // "전체"
-    { ...TOTAL_OPERATION_TYPE_DATA[1], group: loginCampus.name } // Mocking user campus data
-  ];
+  const section1Data = TOTAL_OPERATION_TYPE_DATA;
 
-  const section2Data = [
-    { ...TOTAL_OPERATION_TYPE_DATA[0], group: '전체' },
-    REGION_DATA.find(r => r.group === loginCampus.region) || REGION_DATA[0]
-  ];
+  const regionBenchmarkGroups = ['서울권', '경인권', '강원권', '충청권', '전라권'];
+  const section2Data = regionBenchmarkGroups
+    .map((g) => REGION_DATA.find((r) => r.group === g))
+    .filter((row): row is (typeof REGION_DATA)[number] => row != null);
 
-  const section3Data = [
-    { ...(STUDENT_SIZE_DATA.find(s => s.group === loginCampus.studentSizeGroup) || STUDENT_SIZE_DATA[1]), group: loginCampus.name }
-  ];
+  const section3Data = STUDENT_SIZE_DATA;
 
-  const section4Data = [
-    { ...(CLASS_SIZE_DATA.find(c => c.group === loginCampus.classSizeGroup) || CLASS_SIZE_DATA[1]), group: loginCampus.name }
-  ];
+  const section4Data = CLASS_SIZE_DATA;
 
-  const section5Data = [
-    { ...(OPERATION_PERIOD_DATA.find(o => o.group === loginCampus.operationPeriodGroup) || OPERATION_PERIOD_DATA[1]), group: loginCampus.name }
-  ];
+  const section5Data = OPERATION_PERIOD_DATA;
 
   const section6Data = [
-    { type: loginCampus.name, r1: '1(100%)', r2: '0(0.0%)', r3: '0(0.0%)', r4: '0(0.0%)', total: '1(100%)' }
+    { type: '직영', r1: '8(53.3%)', r2: '4(26.7%)', r3: '2(13.3%)', r4: '1(6.7%)', total: '15(100%)' },
+    { type: '분원', r1: '12(28.6%)', r2: '18(42.9%)', r3: '8(19.0%)', r4: '4(9.5%)', total: '42(100%)' },
+    { type: '계', r1: '20(35.1%)', r2: '22(38.6%)', r3: '10(17.5%)', r4: '5(8.8%)', total: '57(100%)' },
   ];
 
   return (
@@ -393,13 +388,13 @@ export function PScoreAnalysis({
         </div>
       )}
 
-      {/* Section 1: 선택 캠퍼스 기준 */}
+      {/* Section 1: 전체/직영/분원 기준 */}
       <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden mb-4">
         <div 
           className="px-4 py-2 flex justify-between items-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border-b border-slate-200 dark:border-slate-700"
           onClick={() => setIsSection1Open(!isSection1Open)}
         >
-          <h3 className="text-lg font-bold text-slate-800 dark:text-white">1. 선택 캠퍼스 기준</h3>
+          <h3 className="text-lg font-bold text-slate-800 dark:text-white">1. 전체/직영/분원 기준</h3>
           {isSection1Open ? <ChevronUp className="w-5 h-5 text-slate-400" /> : <ChevronDown className="w-5 h-5 text-slate-400" />}
         </div>
         
@@ -413,7 +408,7 @@ export function PScoreAnalysis({
               <table className="w-full text-sm text-center">
                 <thead className="text-xs text-slate-500 bg-slate-50 dark:bg-slate-900/50 dark:text-slate-400">
                   <tr>
-                    <th className="px-1.5 py-1 font-medium border-b border-slate-200 dark:border-slate-700" rowSpan={2}>캠퍼스명</th>
+                    <th className="px-1.5 py-1 font-medium border-b border-slate-200 dark:border-slate-700" rowSpan={2}>운영</th>
                     <th className="px-1.5 py-1 font-medium border-b border-slate-200 dark:border-slate-700" rowSpan={2}>캠퍼스수</th>
                     <th className="px-1.5 py-1 font-medium border-b border-slate-200 dark:border-slate-700" rowSpan={2}>학급수</th>
                     <th className="px-1.5 py-1 font-medium border-b border-slate-200 dark:border-slate-700" rowSpan={2}>학생수</th>
@@ -669,7 +664,7 @@ export function PScoreAnalysis({
             <div className="space-y-4">
               <h4 className="font-bold text-slate-800 dark:text-white text-base">3. 차트 및 테이블 해설</h4>
               <div className="space-y-3 pl-2">
-                <p>📋 <strong>선택 캠퍼스 기준 (가로형 바차트 + 상세표):</strong> 캠퍼스를 P-Score 내림차순으로 나열. 상단 표에 캠퍼스명, 운영주체, 지역, 학급수, 학생수, 급당평균, SC-CV, P-Score 총평균, 과목별 정답률 표시. 우측 가로 Bar에서 캠퍼스 간 시각적 비교. 점선은 전국 평균 P-Score 기준선.</p>
+                <p>📋 <strong>전체/직영/분원 기준 (가로형 바차트 + 상세표):</strong> 캠퍼스를 P-Score 내림차순으로 나열. 상단 표에 캠퍼스명, 운영주체, 지역, 학급수, 학생수, 급당평균, SC-CV, P-Score 총평균, 과목별 정답률 표시. 우측 가로 Bar에서 캠퍼스 간 시각적 비교. 점선은 전국 평균 P-Score 기준선.</p>
                 <p>📊 <strong>벤치마크 기준표 4종:</strong> 동일 조건 캠퍼스끼리 그룹핑하여 공정한 비교를 제공합니다 (지역권역별, 학생수별, 학급수별, 운영기간별). 각 테이블 옆에 ComposedChart(Bar=P-Score, Line=SC-CV)가 페어링됩니다.</p>
                 <p>📋 <strong>순위구간별 지역권역 분포 (크로스탭):</strong> P-Score 순위를 10위 단위 구간으로 분류. 행=지역권역, 열=순위 구간. 특정 지역의 교육 품질 집중도를 파악합니다.</p>
                 <p>🎯 <strong>과목별 전국 평균 정답률 (반원형 게이지):</strong> 캠퍼스 전체의 과목별 평균 정답률을 40%~100% 범위의 반원형 게이지로 시각화하여 과목 간 수준 차이를 파악합니다.</p>

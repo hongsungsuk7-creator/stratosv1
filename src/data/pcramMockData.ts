@@ -37,6 +37,7 @@ export const PCRAM_KPI_DATA = {
   ];
   
   export const OPERATION_PERIOD_DATA = [
+    { group: '전체', campuses: 27, classes: 65, students: 511, avgPerClass: 7.9, zScore: 0.0, ci: 0.62, ciGrade: 'A+', finalGrade: 'S', pScore: 79.8, pScoreEng: 75.6, pScoreSpeech: 85.2, pScoreFound: 78.6, pScoreCult: 81.5, delta: 0 },
     { group: '16년 이상', campuses: 5, classes: 20, students: 195, avgPerClass: 9.8, zScore: 1.1, ci: 0.55, ciGrade: 'A+', finalGrade: 'S', pScore: 85.5, pScoreEng: 81.5, pScoreSpeech: 91.0, pScoreFound: 83.0, pScoreCult: 87.5, delta: 1.1 },
     { group: '11~15년', campuses: 6, classes: 18, students: 170, avgPerClass: 9.4, zScore: 0.6, ci: 0.60, ciGrade: 'A+', finalGrade: 'S', pScore: 82.5, pScoreEng: 78.2, pScoreSpeech: 87.5, pScoreFound: 80.0, pScoreCult: 84.5, delta: 0.6 },
     { group: '6~10년', campuses: 8, classes: 22, students: 200, avgPerClass: 9.1, zScore: 0.0, ci: 0.64, ciGrade: 'A+', finalGrade: 'B', pScore: 79.8, pScoreEng: 75.5, pScoreSpeech: 85.0, pScoreFound: 78.5, pScoreCult: 81.8, delta: 0.0 },

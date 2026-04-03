@@ -39,9 +39,9 @@ export const PSCORE_KPI_DATA = {
   export const OPERATION_PERIOD_DATA = [
     { group: '전체', campuses: 145, classes: 500, students: 12000, avgPerClass: 24.0, scCv: 0.14, balanceCV: 0.15, pScore: 85.4, pScoreEng: 86.1, pScoreSpeech: 84.3, pScoreFound: 85.7, delta: 0.7 },
     { group: '16년 이상', campuses: 15, classes: 80, students: 2000, avgPerClass: 25.0, scCv: 0.09, balanceCV: 0.10, pScore: 90.5, pScoreEng: 91.2, pScoreSpeech: 89.5, pScoreFound: 90.8, delta: 4.1 },
-    { group: '3년~5년', campuses: 35, classes: 100, students: 2200, avgPerClass: 22.0, scCv: 0.17, balanceCV: 0.18, pScore: 81.2, pScoreEng: 82.0, pScoreSpeech: 80.1, pScoreFound: 81.5, delta: -2.1 },
-    { group: '6년-10년', campuses: 45, classes: 160, students: 4000, avgPerClass: 25.0, scCv: 0.14, balanceCV: 0.15, pScore: 84.5, pScoreEng: 85.2, pScoreSpeech: 83.5, pScoreFound: 84.8, delta: -0.2 },
-    { group: '11년-15년', campuses: 30, classes: 120, students: 3000, avgPerClass: 25.0, scCv: 0.11, balanceCV: 0.12, pScore: 87.8, pScoreEng: 88.5, pScoreSpeech: 86.5, pScoreFound: 88.4, delta: 2.2 },
+    { group: '11~15년', campuses: 30, classes: 120, students: 3000, avgPerClass: 25.0, scCv: 0.11, balanceCV: 0.12, pScore: 87.8, pScoreEng: 88.5, pScoreSpeech: 86.5, pScoreFound: 88.4, delta: 2.2 },
+    { group: '6~10년', campuses: 45, classes: 160, students: 4000, avgPerClass: 25.0, scCv: 0.14, balanceCV: 0.15, pScore: 84.5, pScoreEng: 85.2, pScoreSpeech: 83.5, pScoreFound: 84.8, delta: -0.2 },
+    { group: '3~5년', campuses: 35, classes: 100, students: 2200, avgPerClass: 22.0, scCv: 0.17, balanceCV: 0.18, pScore: 81.2, pScoreEng: 82.0, pScoreSpeech: 80.1, pScoreFound: 81.5, delta: -2.1 },
     { group: '2년 이하', campuses: 20, classes: 40, students: 800, avgPerClass: 20.0, scCv: 0.18, balanceCV: 0.20, pScore: 79.5, pScoreEng: 80.2, pScoreSpeech: 78.5, pScoreFound: 79.8, delta: -3.5 },
   ];
   

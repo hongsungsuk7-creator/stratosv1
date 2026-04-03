@@ -54,7 +54,11 @@ const AnalysisSection = ({ title, data }: { title: string, data: any[] }) => {
                     <thead className="text-xs text-slate-500 bg-slate-50 dark:bg-slate-900/50 dark:text-slate-400 uppercase">
                       <tr>
                         <th className="px-1.5 py-1 font-medium border-b border-slate-200 dark:border-slate-700" rowSpan={2}>
-                          {title.includes('선택 캠퍼스') ? '운영' : title.replace(/^\d+\.\s*/, '').replace(' 기준', '')}
+                          {title.includes('전체/직영/분원') || title.includes('선택 캠퍼스')
+                            ? '운영'
+                            : title.includes('지역권역')
+                              ? '구분'
+                              : title.replace(/^\d+\.\s*/, '').replace(' 기준', '')}
                         </th>
                         <th className="px-1.5 py-1 font-medium text-right border-b border-slate-200 dark:border-slate-700" rowSpan={2}>캠퍼스수</th>
                         <th className="px-1.5 py-1 font-medium text-right border-b border-slate-200 dark:border-slate-700" rowSpan={2}>학급수</th>
@@ -427,7 +431,7 @@ const GuideSection = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
               <div className="space-y-2">
                 <h5 className="font-bold flex items-center gap-2 text-slate-800 dark:text-white">
-                  <span className="text-blue-500">📋</span> 선택 캠퍼스 기준 (NE 분포 + 상세표)
+                  <span className="text-blue-500">📋</span> 전체/직영/분원 기준 (NE 분포 + 상세표)
                 </h5>
                 <p className="text-xs text-slate-500">직영 캠퍼스의 NE Band 분포를 6구간 스택바로 시각화. 상세표에서 EMI등급, Elite Z, Elite CV, NE구간별 비중, Retention Alert 등을 확인.</p>
               </div>
@@ -880,7 +884,7 @@ export function PeqmAnalysis({
         </button>
       </div>
 
-      <AnalysisSection title="1. 선택 캠퍼스 기준" data={TOTAL_OPERATION_TYPE_DATA} />
+      <AnalysisSection title="1. 전체/직영/분원 기준" data={TOTAL_OPERATION_TYPE_DATA} />
       <AnalysisSection title="2. 지역권역 기준" data={REGION_DATA} />
       <AnalysisSection title="3. 학생수 기준" data={STUDENT_SIZE_DATA} />
       <AnalysisSection title="4. 학급수 기준" data={CLASS_SIZE_DATA} />
