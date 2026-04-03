@@ -53,7 +53,7 @@ export function dotFillForDiagnosisLabel(raw: string | undefined): string {
 export function ScatterDiagnosisDotLegend({ className = '' }: { className?: string }) {
   return (
     <div
-      className={`flex flex-wrap items-center justify-center gap-x-5 gap-y-2 border-t border-slate-100 pt-3 dark:border-slate-700 ${className}`}
+      className={`flex min-h-[2.75rem] flex-wrap items-center justify-center gap-x-5 gap-y-2 border-t border-slate-100 pt-3 dark:border-slate-700 ${className}`}
     >
       {SCATTER_DIAGNOSIS_LEGEND_ITEMS.map((item) => (
         <div

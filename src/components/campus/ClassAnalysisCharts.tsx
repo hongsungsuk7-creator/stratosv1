@@ -1,7 +1,8 @@
 import React from 'react';
 import { TrendingUp, Target } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ScatterChart, Scatter, ZAxis, Cell } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ScatterChart, Scatter, ZAxis, Cell } from 'recharts';
 import { CLASSES_DATA, CAMPUS_DATA } from '../../data/campusMockData';
+import { LineTrendSeriesLegend } from '../charts/LineTrendSeriesLegend';
 import {
   ScatterDiagnosisDotLegend,
   dotFillForPcramStatus,
@@ -98,12 +99,17 @@ export function ClassAnalysisCharts({
                 }}
               />
               <Tooltip contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}}/>
-              <Legend iconType="circle" wrapperStyle={{fontSize: '12px'}}/>
               <Line type="monotone" dataKey="national" name="전국 평균" stroke="#f43f5e" strokeWidth={2} dot={{r: 4}} activeDot={{r: 6}}/>
               <Line type="monotone" dataKey="campus" name={campusName} stroke="#4f46e5" strokeWidth={2} dot={{r: 4}}/>
             </LineChart>
           </ResponsiveContainer>
         </div>
+        <LineTrendSeriesLegend
+          items={[
+            { label: '전국 평균', color: '#f43f5e' },
+            { label: campusName, color: '#4f46e5' },
+          ]}
+        />
       </div>
       
       <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm dark:bg-slate-800 dark:border-slate-700">

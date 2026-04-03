@@ -133,11 +133,11 @@ export function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
             <div key={idx}>
               <button 
                 onClick={() => toggleGroup(group.title)}
-                className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 ${isCollapsed ? 'px-0' : 'px-2'} hover:text-slate-600 transition-colors dark:text-slate-500 dark:hover:text-slate-300`}
+                className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} text-[12px] font-bold text-slate-500 uppercase tracking-wide mb-2 ${isCollapsed ? 'px-0' : 'px-2'} hover:text-slate-700 transition-colors dark:text-slate-400 dark:hover:text-slate-200`}
               >
-                <span>{isCollapsed ? group.shortTitle : group.title}</span>
+                <span className="text-left leading-snug">{isCollapsed ? group.shortTitle : group.title}</span>
                 {!isCollapsed && (
-                  isGroupExpanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />
+                  isGroupExpanded ? <ChevronDown className="w-4 h-4 shrink-0 opacity-70" /> : <ChevronRight className="w-4 h-4 shrink-0 opacity-70" />
                 )}
               </button>
               

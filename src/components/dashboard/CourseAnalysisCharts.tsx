@@ -1,8 +1,9 @@
 import React from 'react';
 import { TrendingUp, Target } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ScatterChart, Scatter, ZAxis, Cell } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ScatterChart, Scatter, ZAxis, Cell } from 'recharts';
 import { pcRamData_2025_09, peqmData_2025_09 } from '../../data/examData';
 import { CAMPUS_INFO } from '../../constants';
+import { LineTrendSeriesLegend } from '../charts/LineTrendSeriesLegend';
 import {
   ScatterDiagnosisDotLegend,
   dotFillForDiagnosisLabel,
@@ -103,13 +104,19 @@ export function CourseAnalysisCharts({ testType, selectedYear: _selectedYear, se
                 }}
               />
               <Tooltip contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}}/>
-              <Legend iconType="circle" wrapperStyle={{fontSize: '12px'}}/>
               <Line type="monotone" dataKey="LX A" stroke="#4f46e5" strokeWidth={2} dot={{r: 4}} activeDot={{r: 6}}/>
               <Line type="monotone" dataKey="GT1" stroke="#0ea5e9" strokeWidth={2} dot={{r: 4}}/>
               <Line type="monotone" dataKey="MAG1" stroke="#f59e0b" strokeWidth={2} dot={{r: 4}}/>
             </LineChart>
           </ResponsiveContainer>
         </div>
+        <LineTrendSeriesLegend
+          items={[
+            { label: 'LX A', color: '#4f46e5' },
+            { label: 'GT1', color: '#0ea5e9' },
+            { label: 'MAG1', color: '#f59e0b' },
+          ]}
+        />
       </div>
       
       <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm dark:bg-slate-800 dark:border-slate-700">
