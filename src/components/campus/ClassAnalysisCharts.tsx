@@ -2,6 +2,10 @@ import React from 'react';
 import { TrendingUp, Target } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ScatterChart, Scatter, ZAxis, Cell } from 'recharts';
 import { CLASSES_DATA, CAMPUS_DATA } from '../../data/campusMockData';
+import {
+  ScatterDiagnosisDotLegend,
+  dotFillForPcramStatus,
+} from '../charts/ScatterDiagnosisDotLegend';
 
 interface ClassAnalysisChartsProps {
   testType?: string;
@@ -22,7 +26,8 @@ export function ClassAnalysisCharts({
     zScore: c.zScore,
     excellentRatio: c.excellentRatio,
     studentCount: c.studentCount,
-    emiGrade: c.peqm // Using peqm as emiGrade proxy
+    emiGrade: c.peqm, // Using peqm as emiGrade proxy
+    pcramStatus: c.pcramStatus,
   }));
   const zMin = Math.min(...scatterData.map((d) => d.zScore));
   const zMax = Math.max(...scatterData.map((d) => d.zScore));
@@ -107,7 +112,7 @@ export function ClassAnalysisCharts({
         </h3>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <ScatterChart margin={{ top: 12, right: 20, bottom: 36, left: 16 }}>
+            <ScatterChart margin={{ top: 12, right: 20, bottom: 28, left: 16 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" className="dark:stroke-slate-700"/>
               <XAxis
                 type="number"
@@ -150,7 +155,7 @@ export function ClassAnalysisCharts({
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
                     const data = payload[0].payload;
-                    const bgColor = data.emiGrade === 'G' ? '#10b981' : '#ef4444';
+                    const bgColor = dotFillForPcramStatus(data.pcramStatus);
                     const ratio = Number(data.excellentRatio);
                     const total = Number(data.studentCount);
                     const edNe1Count = Math.round((total * ratio) / 100);
@@ -177,12 +182,13 @@ export function ClassAnalysisCharts({
               />
               <Scatter name="학급" data={scatterData} fill="#8b5cf6">
                 {scatterData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.emiGrade === 'G' ? '#10b981' : '#ef4444'} />
+                  <Cell key={`cell-${index}`} fill={dotFillForPcramStatus(entry.pcramStatus)} />
                 ))}
               </Scatter>
             </ScatterChart>
           </ResponsiveContainer>
         </div>
+        <ScatterDiagnosisDotLegend />
       </div>
     </div>
   );

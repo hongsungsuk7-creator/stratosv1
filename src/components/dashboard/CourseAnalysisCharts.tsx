@@ -1,8 +1,12 @@
 import React from 'react';
 import { TrendingUp, Target } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ScatterChart, Scatter, ZAxis, Cell } from 'recharts';
-import { peqmData_2025_09 } from '../../data/examData';
+import { pcRamData_2025_09, peqmData_2025_09 } from '../../data/examData';
 import { CAMPUS_INFO } from '../../constants';
+import {
+  ScatterDiagnosisDotLegend,
+  dotFillForDiagnosisLabel,
+} from '../charts/ScatterDiagnosisDotLegend';
 
 interface CourseAnalysisChartsProps {
   testType: string;
@@ -54,14 +58,18 @@ export function CourseAnalysisCharts({ testType, selectedYear: _selectedYear, se
 
   const dynamicTrendData = generateTrendData();
 
-  // Transform PEQM data for the scatter chart
-  const courseDifficultyData = peqmData_2025_09.map(item => ({
-    course: item.campus, // Using campus as a proxy for course/class for now
-    score: item.edNe1Ratio, // Using ED+NE1 ratio as a proxy for score
-    difficulty: item.eliteZScore + 3, // Shifting Z-score to a positive difficulty scale (approx 2-6)
-    size: item.students * 10, // Scaling up students for bubble size
-    emiGrade: item.emiGrade
-  }));
+  // Transform PEQM + PC-RAM 진단유형(캠퍼스 키 일치)으로 산점도 색상 매핑
+  const courseDifficultyData = peqmData_2025_09.map((item) => {
+    const pc = pcRamData_2025_09.find((p) => p.campus === item.campus);
+    return {
+      course: item.campus,
+      score: item.edNe1Ratio,
+      difficulty: item.eliteZScore + 3,
+      size: item.students * 10,
+      emiGrade: item.emiGrade,
+      diagnosisType: pc?.diagnosisType,
+    };
+  });
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -71,20 +79,13 @@ export function CourseAnalysisCharts({ testType, selectedYear: _selectedYear, se
         </h3>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={dynamicTrendData} margin={{ top: 8, right: 12, left: 22, bottom: 28 }}>
+            <LineChart data={dynamicTrendData} margin={{ top: 8, right: 12, left: 22, bottom: 8 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" className="dark:stroke-slate-700"/>
               <XAxis
                 dataKey="session"
                 axisLine={false}
                 tickLine={false}
                 tick={{ fontSize: 12, fill: '#64748b' }}
-                label={{
-                  value: '시험 월·유형',
-                  position: 'insideBottom',
-                  offset: -4,
-                  fontSize: 11,
-                  fill: '#64748b',
-                }}
               />
               <YAxis
                 domain={[60, 100]}
@@ -117,7 +118,7 @@ export function CourseAnalysisCharts({ testType, selectedYear: _selectedYear, se
         </h3>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <ScatterChart margin={{ top: 12, right: 20, bottom: 36, left: 16 }}>
+            <ScatterChart margin={{ top: 12, right: 20, bottom: 28, left: 16 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" className="dark:stroke-slate-700"/>
               <XAxis
                 type="number"
@@ -165,7 +166,7 @@ export function CourseAnalysisCharts({ testType, selectedYear: _selectedYear, se
                     const typeAndRegion = campusInfo && campusInfo.type && campusInfo.region 
                       ? `(${campusInfo.type}ㆍ${campusInfo.region})` 
                       : '';
-                    const bgColor = data.emiGrade === 'G' ? '#10b981' : '#ef4444';
+                    const bgColor = dotFillForDiagnosisLabel(data.diagnosisType);
                     const scoreNum = typeof data.score === 'number' ? data.score : Number(data.score);
                     const ratioStr =
                       Number.isFinite(scoreNum) && Math.abs(scoreNum - Math.round(scoreNum)) < 1e-6
@@ -200,12 +201,13 @@ export function CourseAnalysisCharts({ testType, selectedYear: _selectedYear, se
               />
               <Scatter name="캠퍼스" data={courseDifficultyData} fill="#8b5cf6">
                 {courseDifficultyData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.emiGrade === 'G' ? '#10b981' : '#ef4444'} />
+                  <Cell key={`cell-${index}`} fill={dotFillForDiagnosisLabel(entry.diagnosisType)} />
                 ))}
               </Scatter>
             </ScatterChart>
           </ResponsiveContainer>
         </div>
+        <ScatterDiagnosisDotLegend />
       </div>
     </div>
   );
