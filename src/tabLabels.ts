@@ -1,6 +1,6 @@
 /** 탭 바·사이드바와 동일한 키(id) → 표시 라벨 */
 export const TAB_LABELS: Record<string, string> = {
-  dashboard: 'Dashboard',
+  dashboard: 'HQ Dashboard',
   pscore: 'P-Score',
   pcram: 'PC-RAM',
   peqm: 'PEQM',

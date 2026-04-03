@@ -44,7 +44,7 @@ export function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
       title: 'HQ Management System',
       shortTitle: 'HQ',
       items: [
-        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+        { id: 'dashboard', label: 'HQ Dashboard', icon: LayoutDashboard },
         { id: 'pscore', label: 'P-Score', icon: BarChart3 },
         { id: 'pcram', label: 'PC-RAM', icon: AlertTriangle },
         { id: 'peqm', label: 'PEQM', icon: ShieldCheck },

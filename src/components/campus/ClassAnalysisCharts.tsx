@@ -19,11 +19,15 @@ export function ClassAnalysisCharts({
 
   const scatterData = CLASSES_DATA.map(c => ({
     name: c.name,
-    difficulty: c.difficulty,
+    zScore: c.zScore,
     excellentRatio: c.excellentRatio,
     studentCount: c.studentCount,
     emiGrade: c.peqm // Using peqm as emiGrade proxy
   }));
+  const zMin = Math.min(...scatterData.map((d) => d.zScore));
+  const zMax = Math.max(...scatterData.map((d) => d.zScore));
+  const zPad = 0.35;
+  const zDomain: [number, number] = [zMin - zPad, zMax + zPad];
 
   const MT_MONTHS = [1, 3, 4, 6, 7, 9, 10, 12];
   const LT_MONTHS = [2, 5, 8, 11];
@@ -70,10 +74,24 @@ export function ClassAnalysisCharts({
         </h3>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={dynamicTrendData}>
+            <LineChart data={dynamicTrendData} margin={{ top: 8, right: 12, left: 22, bottom: 8 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" className="dark:stroke-slate-700"/>
               <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748b'}}/>
-              <YAxis domain={[60, 100]} axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748b'}}/>
+              <YAxis
+                domain={[60, 100]}
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 12, fill: '#64748b' }}
+                label={{
+                  value: '평균 정답률 (%)',
+                  angle: -90,
+                  position: 'insideLeft',
+                  offset: 10,
+                  style: { textAnchor: 'middle' },
+                  fontSize: 11,
+                  fill: '#64748b',
+                }}
+              />
               <Tooltip contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}}/>
               <Legend iconType="circle" wrapperStyle={{fontSize: '12px'}}/>
               <Line type="monotone" dataKey="national" name="전국 평균" stroke="#f43f5e" strokeWidth={2} dot={{r: 4}} activeDot={{r: 6}}/>
@@ -85,14 +103,47 @@ export function ClassAnalysisCharts({
       
       <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm dark:bg-slate-800 dark:border-slate-700">
         <h3 className="text-base font-bold text-slate-800 mb-4 flex items-center dark:text-white">
-          <Target className="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-400"/> 학급별 난이도 vs 우수학생 비율
+          <Target className="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-400"/> 학급별 난이도(Z-Score) vs 우수학생 비율
         </h3>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <ScatterChart margin={{ top: 10, right: 20, bottom: 10, left: -20 }}>
+            <ScatterChart margin={{ top: 12, right: 20, bottom: 36, left: 16 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" className="dark:stroke-slate-700"/>
-              <XAxis type="number" dataKey="difficulty" name="난이도" domain={[0, 10]} axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748b'}}/>
-              <YAxis type="number" dataKey="excellentRatio" name="우수비율" domain={[0, 100]} axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748b'}}/>
+              <XAxis
+                type="number"
+                dataKey="zScore"
+                name="난이도(Z-Score)"
+                domain={zDomain}
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 12, fill: '#64748b' }}
+                tickFormatter={(v: number) => v.toFixed(2)}
+                label={{
+                  value: '난이도 (Z-Score)',
+                  position: 'insideBottom',
+                  offset: -4,
+                  fontSize: 11,
+                  fill: '#64748b',
+                }}
+              />
+              <YAxis
+                type="number"
+                dataKey="excellentRatio"
+                name="우수비율"
+                domain={[0, 100]}
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 12, fill: '#64748b' }}
+                label={{
+                  value: '우수학생 비율 (%)',
+                  angle: -90,
+                  position: 'insideLeft',
+                  offset: 4,
+                  style: { textAnchor: 'middle' },
+                  fontSize: 11,
+                  fill: '#64748b',
+                }}
+              />
               <ZAxis type="number" dataKey="studentCount" range={[50, 400]} name="학생수" />
               <Tooltip 
                 cursor={{strokeDasharray: '3 3'}} 
@@ -107,7 +158,9 @@ export function ClassAnalysisCharts({
                           <span className="font-bold text-[14px] text-slate-100">{data.name}</span>
                         </div>
                         <div className="flex flex-col gap-1">
-                          <div className="text-[13px] text-slate-300">난이도: {data.difficulty}</div>
+                          <div className="text-[13px] text-slate-300">
+                            난이도 (Z-Score 기반) {Number(data.zScore).toFixed(2)}
+                          </div>
                           <div className="text-[13px] text-slate-300">우수비율: {data.excellentRatio}%</div>
                           <div className="text-[13px] text-slate-300">학생수: {data.studentCount}명</div>
                         </div>

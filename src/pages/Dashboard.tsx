@@ -112,7 +112,7 @@ export function Dashboard({ userGroup }: { userGroup: UserGroup }) {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Dashboard</h1>
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-white">HQ Dashboard</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">전국 캠퍼스의 핵심 지표와 운영 현황을 한눈에 모니터링하는 본사 교육사업본부용 통합 대시보드입니다.</p>
         </div>
       </div>
